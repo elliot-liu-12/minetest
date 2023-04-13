@@ -12,18 +12,34 @@ testBoolValue = true;
 testFlagsKey = "csm_restriction_flags"
 testFlagsValue = 0
 
-testNpKey = "mg_biome_np_heat_blend"
-
 local npValue = {
-	offset      = 0,
-	scale       = 1.5,
-    spread      = {8, 8, 8},
-    seed        = 13,
-    octaves     = 2,
-    persistence = 1.0,
-    lacunarity  = 2.0,
-    flags       = eased
+	offset = 50,
+		scale = 50,
+		spread = {x = 2000, y = 2000, z = 2000},
+		seed = 842,
+		octaves = 3,
+		persistence = 0.5,
+		lacunarity = 2.0,
+		flags = "defaults"
 }
+
+minetest.set_mapgen_setting_noiseparams(
+	"mg_biome_np_humidity",
+	{
+		offset = 50,
+		scale = 50,
+		spread = {x = 1000, y = 1000, z = 1000},
+		seed = 842,
+		octaves = 3,
+		persistence = 0.5,
+		lacunarity = 2.0,
+		flags = "defaults"
+	},
+	true
+)
+
+minetest.settings:native_set_np_group("mg_biome_np_humidity",npValue);
+
 
 minetest.register_chatcommand("lua_settings_get", {
 	description = "Invokes lua_api > l_settings.l_lua_settings_get",
@@ -103,7 +119,7 @@ minetest.register_chatcommand("test_settings_getbool", {
 minetest.register_chatcommand("lua_settings_getnpgroup", {
 	description = "Invokes lua_api > l_settings.lua_settings_get_np_group",
 	func = function(self)
-        local res = minetest.settings:get_np_group(testNpKey);
+        local res = minetest.settings:get_np_group("mg_biome_np_humidity");
         if res then
             return true, "Success, get_np_group() returned: "..dump(res)
         else
@@ -115,7 +131,7 @@ minetest.register_chatcommand("lua_settings_getnpgroup", {
 minetest.register_chatcommand("native_settings_getnpgroup", {
 	description = "Invokes lua_api > l_settings.native_settings_get_np_group",
 	func = function(self)
-        local res = minetest.settings:native_get_np_group(testNpKey);
+        local res = minetest.settings:native_get_np_group("mg_biome_np_humidity");
         if res then
             return true, "Success, get_np_group() returned: "..dump(res)
         else
@@ -127,8 +143,8 @@ minetest.register_chatcommand("native_settings_getnpgroup", {
 minetest.register_chatcommand("test_settings_getnpgroup", {
 	description = "Asserts lua api and native api behaviors for l_settings.get_np_group",
 	func = function(self)
-		local lua = minetest.settings:get_np_group(testNpKey);
-		local native = minetest.settings:native_get_np_group(testNpKey);
+		local lua = minetest.settings:get_np_group("mg_biome_np_humidity");
+		local native = minetest.settings:native_get_np_group("mg_biome_np_humidity");
 		if dump(lua) == dump(native) then
 			return true, "(Success) [Settings] get_np_group()"
 		else
@@ -226,35 +242,29 @@ minetest.register_chatcommand("test_settings_setbool", {
 	end
 })
 
+--Nothing is pushed to th lua stack, need to check output dump to confirm
 minetest.register_chatcommand("lua_settings_setnpgroup", {
 	description = "Invokes lua_api > l_settings.lua_settings_set_np_group",
 	func = function(self)
-        local res = minetest.settings:set_np_group("mg_biome_np_heat_blend",npValue);
-        if res then
-            return true, "Success, set_np_group() returned: "..tostring(res)
-        else
-            return false, "Cannot set NoiseParams in Minetest.conf" 
-        end
+        local res = minetest.settings:set_np_group("mg_biome_np_humidity",npValue);
+        return true, "Success, set_np_group() returned: "..dump(res)
+       
 	end
 })
 
 minetest.register_chatcommand("native_settings_setnpgroup", {
 	description = "Invokes lua_api > l_settings.native_settings_set_np_group",
 	func = function(self)
-        local res = minetest.settings:native_set_np_group("mg_biome_np_heat_blend",npValue);
-        if res then
-            return true, "Success, set_np_group() returned: "..tostring(res)
-        else
-            return false, "Cannot set NoiseParams in Minetest.conf" 
-        end
+        local res = minetest.settings:native_set_np_group("mg_biome_np_humidity",npValue);
+        return true, "Success, set_np_group() returned: "..dump(res)
 	end
 })
 
 minetest.register_chatcommand("test_settings_setnpgroup", {
 	description = "Asserts lua api and native api behaviors for l_settings.set_np_group",
 	func = function(self)
-		local lua = minetest.settings:native_set_np_group(testNpKey,npValue);
-		local native = minetest.settings:native_set_np_group(testNpKey,npValue);
+		local lua = minetest.settings:native_set_np_group("mg_biome_np_humidity",npValue);
+		local native = minetest.settings:native_set_np_group("mg_biome_np_humidity",npValue);
 		if lua == native then
 			return true, "(Success) [Settings] set()"
 		else
@@ -267,7 +277,7 @@ minetest.register_chatcommand("test_settings_setnpgroup", {
 minetest.register_chatcommand("lua_settings_remove", {
 	description = "Invokes lua_api > l_settings.lua_settings_remove",
 	func = function(self)
-        local res = minetest.settings:remove("weird_key");
+        local res = minetest.settings:remove("mg_biome_np_humidity");
         if res then
             return true, "Success, remove() returned: "..tostring(res)
         else
@@ -281,7 +291,8 @@ minetest.register_chatcommand("lua_settings_remove", {
 minetest.register_chatcommand("native_settings_remove", {
 	description = "Invokes lua_api > l_settings.native_settings_remove",
 	func = function(self)
-        local res = minetest.settings:native_remove("wonky_key");
+		minetest.settings:native_set_np_group("mg_biome_np_humidity",npValue);
+        local res = minetest.settings:native_remove("mg_biome_np_humidity");
         if res then
             return true, "Success, native_remove() returned: "..tostring(res)
         else
@@ -289,7 +300,7 @@ minetest.register_chatcommand("native_settings_remove", {
         end
 	end
 })
-
+--Tests removing keys that dont exist, should return nil
 minetest.register_chatcommand("test_settings_remove", {
 	description = "Asserts lua api and native api behaviors for l_settings.remove",
 	func = function(self)
@@ -413,6 +424,22 @@ minetest.register_chatcommand("test_settings_totable", {
 		end
 	end
 })
+
+--Set 1 more time to have key at start of next test
+minetest.set_mapgen_setting_noiseparams(
+	"mg_biome_np_humidity",
+	{
+		offset = 50,
+		scale = 50,
+		spread = {x = 1000, y = 1000, z = 1000},
+		seed = 842,
+		octaves = 3,
+		persistence = 0.5,
+		lacunarity = 2.0,
+		flags = "defaults"
+	},
+	true
+)
 
 
 
