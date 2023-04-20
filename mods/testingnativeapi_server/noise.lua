@@ -19,9 +19,6 @@ loc3d = {x=1,y=1,z=1}
 sliceOffset={0,0,0}
 sliceSize={2,2,2}
 
-SECrand = SecureRandom(42)
-PSrand = PseudoRandom(42)
-
 
 
 minetest.register_chatcommand("lua_noise_get2dmap", {
@@ -365,6 +362,7 @@ minetest.register_chatcommand("test_noise_randnormaldist", {
 minetest.register_chatcommand("lua_noise_nextbytes", {
 	description = "Invokes lua_api > l_noise.l_lua_next_bytes",
 	func = function(self)
+		SECrand = SecureRandom(42)
         local res = SECrand:next_bytes(4)
         if res then
             return true, "Success, next_bytes() returned: "..dump(res)
@@ -377,12 +375,28 @@ minetest.register_chatcommand("lua_noise_nextbytes", {
 minetest.register_chatcommand("native_noise_nextbytes", {
 	description = "Invokes lua_api > l_noise.l_native_next_bytes",
 	func = function(self)
+		SECrand = SecureRandom(42)
         local res = SECrand:native_next_bytes(4)
         if res then
             return true, "Success, native_next_bytes() returned: "..dump(res)
         else
             return false, "Failed to return next bytes" 
         end
+	end
+})
+--Unlike random numbers, there is no seed for bytes, so they will likely never be the same value
+minetest.register_chatcommand("test_noise_nextbytes", {
+	description = "Asserts lua api and native api behaviors for l_noise_next_bytes",
+	func = function(self)
+		SECrand1 = SecureRandom(42)
+		SECrand2 = SecureRandom(42)
+        local lua = SECrand1:next_bytes(25,250)
+		local native = SECrand2:next_bytes(25,250)
+        if lua ~= native then
+			return true, "(Success) [Noise] next_bytes()"
+		else
+			return false, "(Fail) [Noise] next_bytes()"
+		end
 	end
 })
 
@@ -421,7 +435,7 @@ minetest.register_chatcommand("test_noise_nextPS", {
 		local PSrand2 = PseudoRandom(42)
         local lua = PSrand:next(25,250)
 		local native = PSrand2:native_nextPS(25,250)
-       if lua == native then
+		if lua == native then
 			return true, "(Success) [Noise] nextPS()"
 		else
 			return false, "(Fail) [Noise] nextPS()"
@@ -444,7 +458,8 @@ minetest.register_chatcommand("test_noise", {
 			"getmapslice",
 			"next",
 			"randnormaldist",
-			"nextPS"
+			"nextPS",
+			"nextbytes"
 		}
 
 		return native_tests.test_class("noise", methods), 
