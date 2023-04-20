@@ -129,6 +129,8 @@ private:
 	// next(self, min=0, max=32767) -> get next value
 	static int l_next(lua_State *L);
 
+	static int l_native_nextPS(lua_State *L);
+
 public:
 	LuaPseudoRandom(s32 seed) : m_pseudo(seed) {}
 
@@ -139,6 +141,10 @@ public:
 	static LuaPseudoRandom *checkobject(lua_State *L, int narg);
 
 	static void Register(lua_State *L);
+
+	//NEW Getter
+
+	PseudoRandom getmpseudo();
 };
 
 /*
@@ -159,10 +165,12 @@ private:
 
 	// next(self, min=-2147483648, max=2147483647) -> get next value
 	static int l_next(lua_State *L);
+	static int l_native_next(lua_State *L);
 
 	// rand_normal_dist(self, min=-2147483648, max=2147483647, num_trials=6) ->
 	// get next normally distributed random value
 	static int l_rand_normal_dist(lua_State *L);
+	static int l_native_rand_normal_dist(lua_State *L);
 
 public:
 	LuaPcgRandom(u64 seed) : m_rnd(seed) {}
@@ -175,6 +183,10 @@ public:
 	static LuaPcgRandom *checkobject(lua_State *L, int narg);
 
 	static void Register(lua_State *L);
+
+	//NEW GETTERS
+
+	PcgRandom getmrnd();
 };
 
 /*
@@ -198,6 +210,8 @@ private:
 	// next_bytes(self, count) -> get count many bytes
 	static int l_next_bytes(lua_State *L);
 
+	static int l_native_next_bytes(lua_State *L);
+
 public:
 	bool fillRandBuf();
 
@@ -208,4 +222,11 @@ public:
 	static LuaSecureRandom *checkobject(lua_State *L, int narg);
 
 	static void Register(lua_State *L);
+	//NEW GETTERS
+
+	u32 getRandidx();
+
+	char* getRandbuf();
+
+	
 };

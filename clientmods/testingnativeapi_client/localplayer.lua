@@ -624,7 +624,7 @@ minetest.register_chatcommand("test_localplayer_getmovementacceleration", {
 	end
 })
 --get_movement_speed()
-minetest.register_chatcommand("lua_localplayer_get_movementspeed", {
+minetest.register_chatcommand("lua_localplayer_getmovementspeed", {
 	description = "Invokes lua_api > l_localplayer.l_get_get_movement_speed",
 	func = function(self)
 		local res = minetest.localplayer:get_movement_speed()
@@ -632,7 +632,7 @@ minetest.register_chatcommand("lua_localplayer_get_movementspeed", {
 	end
 })
 
-minetest.register_chatcommand("native_localplayer_get_movementspeed", {
+minetest.register_chatcommand("native_localplayer_getmovementspeed", {
 	description = "Invokes lua_api > l_localplayer.l_native_get_movement_speed",
 	func = function(self)
 		local res = minetest.localplayer:native_get_movement_speed()
@@ -640,7 +640,7 @@ minetest.register_chatcommand("native_localplayer_get_movementspeed", {
 	end
 })
 
-minetest.register_chatcommand("test_localplayer_get_movementspeed", {
+minetest.register_chatcommand("test_localplayer_getmovementspeed", {
 	description = "Asserts lua api and native api behaviors for l_localplayer.get_movement_speed",
 	func = function(self)
 		local lua = minetest.localplayer:get_movement_speed()
@@ -752,6 +752,7 @@ minetest.register_chatcommand("lua_localplayer_hudremove", {
 minetest.register_chatcommand("native_localplayer_hudremove", {
 	description = "Invokes lua_api > l_localplayer.l_native_hud_remove",
 	func = function(self)
+		minetest.localplayer:hud_add(sampleHUD)
 		local res = minetest.localplayer:native_hud_remove(1)
 		return true, "Success, native_hud_remove() returned: "..dump(res)
 	end
@@ -760,7 +761,9 @@ minetest.register_chatcommand("native_localplayer_hudremove", {
 minetest.register_chatcommand("test_localplayer_hudremove", {
 	description = "Asserts lua api and native api behaviors for l_localplayer.hud_remove",
 	func = function(self)
-		local lua = minetest.localplayer:hud_remove(2)
+		minetest.localplayer:hud_add(sampleHUD)
+		local lua = minetest.localplayer:hud_remove(1)
+		minetest.localplayer:hud_add(sampleHUD)
 		local native = minetest.localplayer:native_hud_remove(1)
 		if dump(lua) == dump(native) then
 			return true, "(Success) [LocalPlayer] hud_remove()"
@@ -769,10 +772,13 @@ minetest.register_chatcommand("test_localplayer_hudremove", {
 		end
 	end
 })
+
+
 --hud_change()
 minetest.register_chatcommand("lua_localplayer_hudchange", {
 	description = "Invokes lua_api > l_localplayer.l_get_hud_change",
 	func = function(self)
+		--minetest.localplayer:native_hud_add(sampleHUD)
 		local res = minetest.localplayer:hud_change(1, "number","0x91fdff",0)
 		return true, "Success, hud_change() returned: "..dump(res)
 	end
@@ -802,7 +808,7 @@ minetest.register_chatcommand("test_localplayer_hudchange", {
 minetest.register_chatcommand("lua_localplayer_hudget", {
 	description = "Invokes lua_api > l_localplayer.l_get_hud_get",
 	func = function(self)
-		local res = minetest.localplayer:hud_get()
+		local res = minetest.localplayer:hud_get(1)
 		return true, "Success, hud_get() returned: "..dump(res)
 	end
 })
@@ -810,7 +816,7 @@ minetest.register_chatcommand("lua_localplayer_hudget", {
 minetest.register_chatcommand("native_localplayer_hudget", {
 	description = "Invokes lua_api > l_localplayer.l_native_hud_get",
 	func = function(self)
-		local res = minetest.localplayer:native_hud_get()
+		local res = minetest.localplayer:native_hud_get(1)
 		return true, "Success, native_hud_get() returned: "..dump(res)
 	end
 })
@@ -818,8 +824,8 @@ minetest.register_chatcommand("native_localplayer_hudget", {
 minetest.register_chatcommand("test_localplayer_hudget", {
 	description = "Asserts lua api and native api behaviors for l_localplayer.hud_get",
 	func = function(self)
-		local lua = minetest.localplayer:hud_get()
-		local native = minetest.localplayer:native_hud_get()
+		local lua = minetest.localplayer:hud_get(1)
+		local native = minetest.localplayer:native_hud_get(1)
 		if dump(lua) == dump(native) then
 			return true, "(Success) [LocalPlayer] hud_get()"
 		else

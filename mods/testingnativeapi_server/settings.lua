@@ -40,7 +40,6 @@ minetest.set_mapgen_setting_noiseparams(
 
 minetest.settings:native_set_np_group("mg_biome_np_humidity",npValue);
 
-
 minetest.register_chatcommand("lua_settings_get", {
 	description = "Invokes lua_api > l_settings.l_lua_settings_get",
 	func = function(self)
