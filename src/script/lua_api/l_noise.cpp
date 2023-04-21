@@ -600,6 +600,25 @@ int LuaPseudoRandom::l_next(lua_State *L)
 	return 1;
 }
 
+int LuaPseudoRandom::l_native_nextPS(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+
+	LuaPseudoRandom *o = checkobject(L, 1);
+	int min = 0;
+	int max = 32767;
+	lua_settop(L, 3);
+	if (lua_isnumber(L, 2))
+		min = luaL_checkinteger(L, 2);
+	if (lua_isnumber(L, 3))
+		max = luaL_checkinteger(L, 3);
+	
+	int v = pseudoRandom::native_nextPS(o, min, max);
+
+	lua_pushinteger(L, v);
+	return 1;
+}
+
 
 int LuaPseudoRandom::create_object(lua_State *L)
 {
@@ -659,10 +678,16 @@ void LuaPseudoRandom::Register(lua_State *L)
 	lua_register(L, className, create_object);
 }
 
+PseudoRandom LuaPseudoRandom::getmpseudo()
+{
+	return m_pseudo;
+}
+
 
 const char LuaPseudoRandom::className[] = "PseudoRandom";
 const luaL_Reg LuaPseudoRandom::methods[] = {
 	luamethod(LuaPseudoRandom, next),
+	luamethod(LuaPseudoRandom, native_nextPS),
 	{0,0}
 };
 
@@ -683,6 +708,20 @@ int LuaPcgRandom::l_next(lua_State *L)
 	return 1;
 }
 
+int LuaPcgRandom::l_native_next(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+
+	LuaPcgRandom *o = checkobject(L, 1);
+	u32 min = lua_isnumber(L, 2) ? lua_tointeger(L, 2) : o->m_rnd.RANDOM_MIN;
+	u32 max = lua_isnumber(L, 3) ? lua_tointeger(L, 3) : o->m_rnd.RANDOM_MAX;
+
+	int result = pcgRandom::native_next(o, min, max);
+
+	lua_pushinteger(L, result);
+	return 1;
+}
+
 
 int LuaPcgRandom::l_rand_normal_dist(lua_State *L)
 {
@@ -697,6 +736,20 @@ int LuaPcgRandom::l_rand_normal_dist(lua_State *L)
 	return 1;
 }
 
+int LuaPcgRandom::l_native_rand_normal_dist(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+
+	LuaPcgRandom *o = checkobject(L, 1);
+	u32 min = lua_isnumber(L, 2) ? lua_tointeger(L, 2) : o->m_rnd.RANDOM_MIN;
+	u32 max = lua_isnumber(L, 3) ? lua_tointeger(L, 3) : o->m_rnd.RANDOM_MAX;
+	int num_trials = lua_isnumber(L, 4) ? lua_tointeger(L, 4) : 6;
+
+	int result = pcgRandom::native_rand_normal_dist(o, min, max, num_trials);
+
+	lua_pushinteger(L, result);
+	return 1;
+}
 
 int LuaPcgRandom::create_object(lua_State *L)
 {
@@ -758,11 +811,18 @@ void LuaPcgRandom::Register(lua_State *L)
 	lua_register(L, className, create_object);
 }
 
+PcgRandom LuaPcgRandom::getmrnd()
+{
+	return m_rnd;
+}
+
 
 const char LuaPcgRandom::className[] = "PcgRandom";
 const luaL_Reg LuaPcgRandom::methods[] = {
 	luamethod(LuaPcgRandom, next),
+	luamethod(LuaPcgRandom, native_next),
 	luamethod(LuaPcgRandom, rand_normal_dist),
+	luamethod(LuaPcgRandom, native_rand_normal_dist),
 	{0,0}
 };
 
@@ -806,6 +866,21 @@ int LuaSecureRandom::l_next_bytes(lua_State *L)
 
 		lua_pushlstring(L, output_buf, count);
 	}
+
+	return 1;
+}
+
+int LuaSecureRandom::l_native_next_bytes(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+
+	LuaSecureRandom *o = checkobject(L, 1);
+	u32 count = lua_isnumber(L, 2) ? lua_tointeger(L, 2) : 1;
+
+	count = MYMIN(RAND_BUF_SIZE, count);
+
+	std::tuple<const char *, u32> retVal = secureRandom::native_next_bytes(o, count);
+	lua_pushlstring(L, std::get<0>(retVal), std::get<1>(retVal));
 
 	return 1;
 }
@@ -873,8 +948,19 @@ void LuaSecureRandom::Register(lua_State *L)
 	lua_register(L, className, create_object);
 }
 
+u32 LuaSecureRandom::getRandidx()
+{
+	return m_rand_idx;
+}
+
+char* LuaSecureRandom::getRandbuf()
+{
+	return m_rand_buf;
+}
+
 const char LuaSecureRandom::className[] = "SecureRandom";
 const luaL_Reg LuaSecureRandom::methods[] = {
 	luamethod(LuaSecureRandom, next_bytes),
+	luamethod(LuaSecureRandom, native_next_bytes),
 	{0,0}
 };
