@@ -5,7 +5,7 @@
 
 class NativeApiParticlesLocal
 {
-private:
+public:
 	static int native_add_particle(Client *_client, v3f *_pos = nullptr,
 			v3f *_vel = nullptr, v3f *_acc = nullptr,
 			float *_expirationtime = nullptr, float *_size = nullptr,

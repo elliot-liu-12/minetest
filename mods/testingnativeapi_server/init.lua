@@ -17,6 +17,7 @@ dofile(modpath .. "/inventory.lua")
 dofile(modpath .. "/particles.lua")
 dofile(modpath .. "/settings.lua")
 dofile(modpath .. "/noise.lua")
+dofile(modpath .. "/nodetimer.lua")
 
 -- Load helper files
 dofile(modpath .. "/other.lua")

@@ -9,7 +9,8 @@ minetest.register_chatcommand("test_server_classes", {
 			"auth",
 			"inventory",
 			"particles",
-			"noise"
+			"noise",
+			"nodetimer"
 		}
 
 		native_tests.clear_file();

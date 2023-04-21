@@ -21,6 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "lua_api/l_internal.h"
 #include "serverenvironment.h"
 #include "map.h"
+#include "../native_api/native_nodetimer.h"
 
 
 int NodeTimerRef::gc_object(lua_State *L) {
@@ -137,5 +138,129 @@ const luaL_Reg NodeTimerRef::methods[] = {
 	luamethod(NodeTimerRef, is_started),
 	luamethod(NodeTimerRef, get_timeout),
 	luamethod(NodeTimerRef, get_elapsed),
+
+	// register testing methods
+	luamethod(NodeTimerRef, native_start), 
+	luamethod(NodeTimerRef, native_set), 
+	luamethod(NodeTimerRef, native_stop), 
+	luamethod(NodeTimerRef, native_is_started),
+	luamethod(NodeTimerRef, native_get_timeout),
+	luamethod(NodeTimerRef, native_get_elapsed),
+	
 	{0,0}
 };
+
+// native_set
+int NodeTimerRef::l_native_set(lua_State *L)
+{
+	MAP_LOCK_REQUIRED;
+	// get values from lua state
+	NodeTimerRef *o = checkobject(L, 1);
+	f32 t = readParam<float>(L, 2);
+	f32 e = readParam<float>(L, 3);
+
+	// check to see if got the values
+	if (!t || !e || !o) 
+		return 1;
+
+	// call native function
+	int result = NativeNodeTimerRef::native_set(t, e, o);
+
+	return 0;
+}
+
+// native_start
+int NodeTimerRef::l_native_start(lua_State *L)
+{
+	MAP_LOCK_REQUIRED;
+	// get values from lua state
+	NodeTimerRef *o = checkobject(L, 1);
+	f32 t = readParam<float>(L, 2);
+
+	// check to see if got the values
+	if (!t || !o) 
+		return 1;
+
+	// call native function
+	std::cout << "made it here";
+	int result = NativeNodeTimerRef::native_start(t, 0, o);
+
+	return 0;
+}
+
+// native_stop
+int NodeTimerRef::l_native_stop(lua_State *L)
+{
+	MAP_LOCK_REQUIRED;
+	// get values from lua state
+	NodeTimerRef *o = checkobject(L, 1);
+
+	// check to see if got the values
+	if (!o) 
+		return 1;
+
+	// call native function
+	int result = NativeNodeTimerRef::native_stop(o);
+
+	return 0;
+}
+
+// native_is_started
+int NodeTimerRef::l_native_is_started(lua_State *L)
+{
+	MAP_LOCK_REQUIRED;
+	// get values from lua state
+	NodeTimerRef *o = checkobject(L, 1);
+
+	// check to see if got the values
+	if (!o) 
+		return 0;
+
+	// call native function
+	bool result = NativeNodeTimerRef::native_is_started(o);
+
+	// update lua
+	lua_pushboolean(L, result);
+
+	return 1;
+}
+
+// native_get_timeout
+int NodeTimerRef::l_native_get_timeout(lua_State *L)
+{
+	MAP_LOCK_REQUIRED;
+	// get values from lua state
+	NodeTimerRef *o = checkobject(L, 1);
+
+	// check to see if got the values
+	if (!o) 
+		return 0;
+
+	// call native function
+	f32 result = NativeNodeTimerRef::native_get_timeout(o);
+
+	// update lua
+	lua_pushnumber(L, result);
+
+	return 1;
+}
+
+// native_get_elapsed
+int NodeTimerRef::l_native_get_elapsed(lua_State *L)
+{
+	MAP_LOCK_REQUIRED;
+	// get values from lua state
+	NodeTimerRef *o = checkobject(L, 1);
+
+	// check to see if got the values
+	if (!o) 
+		return 0;
+
+	// call native function
+	f32 result = NativeNodeTimerRef::native_get_elapsed(o);
+
+	// update lua
+	lua_pushnumber(L, result);
+
+	return 1;
+}

@@ -34,25 +34,30 @@ private:
 	static const luaL_Reg methods[];
 
 	static int gc_object(lua_State *L);
-
 	static NodeTimerRef *checkobject(lua_State *L, int narg);
-
 	static int l_set(lua_State *L);
-
 	static int l_start(lua_State *L);
-
 	static int l_stop(lua_State *L);
-
 	static int l_is_started(lua_State *L);
-
 	static int l_get_timeout(lua_State *L);
-
 	static int l_get_elapsed(lua_State *L);
+
+	// new lua functions to call corresponding native functions
+	static int l_native_set(lua_State *L);
+	static int l_native_start(lua_State *L);
+	static int l_native_stop(lua_State *L);
+	static int l_native_is_started(lua_State *L);
+	static int l_native_get_timeout(lua_State *L);
+	static int l_native_get_elapsed(lua_State *L);
 
 public:
 	NodeTimerRef(v3s16 p, ServerMap *map) : m_p(p), m_map(map) {}
 	~NodeTimerRef() = default;
 
+	// Getter methods for private attributes
+	v3s16 get_m_p(){return m_p;};
+	ServerMap *get_m_map() { return m_map;};
+	
 	// Creates an NodeTimerRef and leaves it on top of stack
 	// Not callable from Lua; all references are created on the C side.
 	static void create(lua_State *L, v3s16 p, ServerMap *map);
