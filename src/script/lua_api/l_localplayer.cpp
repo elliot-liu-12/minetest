@@ -359,6 +359,7 @@ int LuaLocalPlayer::l_native_get_last_look_vertical(lua_State *L)
 {
 	LocalPlayer *player = getobject(L, 1);
 	auto r = NativeLocalPlayer::native_get_last_look_vertical(player);
+
 	lua_pushnumber(L, r);
 	return 1;
 }
@@ -384,32 +385,6 @@ int LuaLocalPlayer::l_get_control(lua_State *L)
 {
 	LocalPlayer *player = getobject(L, 1);
 	const PlayerControl &c = player->getPlayerControl();
-
-	auto set = [L](const char *name, bool value) {
-		lua_pushboolean(L, value);
-		lua_setfield(L, -2, name);
-	};
-
-	lua_createtable(L, 0, 12);
-	set("up", c.up);
-	set("down", c.down);
-	set("left", c.left);
-	set("right", c.right);
-	set("jump", c.jump);
-	set("aux1", c.aux1);
-	set("sneak", c.sneak);
-	set("zoom", c.zoom);
-	set("dig", c.dig);
-	set("place", c.place);
-
-	return 1;
-}
-
-// get_control(self) RETURN
-int LuaLocalPlayer::l_native_get_control(lua_State *L)
-{
-	LocalPlayer *player = getobject(L, 1);
-	const PlayerControl &c = NativeLocalPlayer::native_get_control(player);
 
 	auto set = [L](const char *name, bool value) {
 		lua_pushboolean(L, value);

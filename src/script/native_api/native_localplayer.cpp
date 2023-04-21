@@ -165,7 +165,6 @@ ItemGroupList NativeLocalPlayer::native_get_armour_groups(LocalPlayer* p)
 	return p->getCAO()->getGroups();
 }
 
-
 u32 NativeLocalPlayer::native_hud_add(LocalPlayer *p, HudElement *elem)
 {
 	return p->addHud(elem);
@@ -176,15 +175,6 @@ HudElement *NativeLocalPlayer::native_hud_remove(LocalPlayer *p, u32 id)
 	return p->removeHud(id);
 }
 
-HudElement* NativeLocalPlayer::native_hud_change(LocalPlayer* p, u32 id)
-{
-	HudElement* e = p->getHud(id);
-	if (e) {
-		return e;
-	}
-	else
-		return nullptr;
-}
 
 HudElement* NativeLocalPlayer::native_hud_get(LocalPlayer* p, u32 id)
 {
@@ -201,8 +191,3 @@ HudElement *NativeLocalPlayer::native_hud_change(LocalPlayer *p, u32 id)
 		return nullptr;
 }
 
-HudElement *NativeLocalPlayer::native_hud_get(LocalPlayer *p, u32 id)
-{
-	HudElement *e = p->getHud(id);
-	return e;
-}
