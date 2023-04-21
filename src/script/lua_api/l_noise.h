@@ -137,7 +137,7 @@ public:
 
 	static void Register(lua_State *L);
 
-	// NEW Getter
+	//NEW Getter
 
 	PseudoRandom getmpseudo();
 };
@@ -179,7 +179,7 @@ public:
 
 	static void Register(lua_State *L);
 
-	// NEW GETTERS
+	//NEW GETTERS
 
 	PcgRandom getmrnd();
 };
@@ -217,6 +217,7 @@ public:
 	static LuaSecureRandom *checkobject(lua_State *L, int narg);
 
 	static void Register(lua_State *L);
+
 	// NEW GETTERS
 
 	u32 getRandidx();

@@ -656,8 +656,11 @@ PseudoRandom LuaPseudoRandom::getmpseudo()
 }
 
 const char LuaPseudoRandom::className[] = "PseudoRandom";
-const luaL_Reg LuaPseudoRandom::methods[] = {luamethod(LuaPseudoRandom, next),
-		luamethod(LuaPseudoRandom, native_nextPS), {0, 0}};
+const luaL_Reg LuaPseudoRandom::methods[] = {
+	luamethod(LuaPseudoRandom, next),
+	luamethod(LuaPseudoRandom, native_nextPS),
+	{0,0}
+};
 
 ///////////////////////////////////////
 /*
@@ -780,10 +783,13 @@ PcgRandom LuaPcgRandom::getmrnd()
 }
 
 const char LuaPcgRandom::className[] = "PcgRandom";
-const luaL_Reg LuaPcgRandom::methods[] = {luamethod(LuaPcgRandom, next),
-		luamethod(LuaPcgRandom, native_next),
-		luamethod(LuaPcgRandom, rand_normal_dist),
-		luamethod(LuaPcgRandom, native_rand_normal_dist), {0, 0}};
+const luaL_Reg LuaPcgRandom::methods[] = {
+	luamethod(LuaPcgRandom, next),
+	luamethod(LuaPcgRandom, native_next),
+	luamethod(LuaPcgRandom, rand_normal_dist),
+	luamethod(LuaPcgRandom, native_rand_normal_dist),
+	{0,0}
+};
 
 ///////////////////////////////////////
 /*
@@ -909,11 +915,15 @@ u32 LuaSecureRandom::getRandidx()
 	return m_rand_idx;
 }
 
-char *LuaSecureRandom::getRandbuf()
+char* LuaSecureRandom::getRandbuf()
 {
 	return m_rand_buf;
 }
 
 const char LuaSecureRandom::className[] = "SecureRandom";
-const luaL_Reg LuaSecureRandom::methods[] = {luamethod(LuaSecureRandom, next_bytes),
-		luamethod(LuaSecureRandom, native_next_bytes), {0, 0}};
+
+const luaL_Reg LuaSecureRandom::methods[] = {
+	luamethod(LuaSecureRandom, next_bytes),
+	luamethod(LuaSecureRandom, native_next_bytes),
+	{0,0}
+};

@@ -36,10 +36,12 @@ class secureRandom
 public:
 	static std::tuple<const char *, u32> native_next_bytes(
 			LuaSecureRandom *o, u32 count);
+
 };
 
 class pseudoRandom
 {
 public:
 	static int native_nextPS(LuaPseudoRandom *o, int min, int max);
+
 };

@@ -431,6 +431,32 @@ int LuaLocalPlayer::l_native_get_control(lua_State *L)
 	return 1;
 }
 
+// get_control(self) RETURN
+int LuaLocalPlayer::l_native_get_control(lua_State *L)
+{
+	LocalPlayer *player = getobject(L, 1);
+	const PlayerControl &c = NativeLocalPlayer::native_get_control(player);
+
+	auto set = [L](const char *name, bool value) {
+		lua_pushboolean(L, value);
+		lua_setfield(L, -2, name);
+	};
+
+	lua_createtable(L, 0, 12);
+	set("up", c.up);
+	set("down", c.down);
+	set("left", c.left);
+	set("right", c.right);
+	set("jump", c.jump);
+	set("aux1", c.aux1);
+	set("sneak", c.sneak);
+	set("zoom", c.zoom);
+	set("dig", c.dig);
+	set("place", c.place);
+
+	return 1;
+}
+
 // get_breath(self)
 int LuaLocalPlayer::l_get_breath(lua_State *L)
 {
@@ -489,8 +515,7 @@ int LuaLocalPlayer::l_get_movement_acceleration(lua_State *L)
 int LuaLocalPlayer::l_native_get_movement_acceleration(lua_State *L)
 {
 	LocalPlayer *player = getobject(L, 1);
-	std::vector<float> mA =
-			NativeLocalPlayer::native_get_movement_acceleration(player);
+	std::vector<float> mA = NativeLocalPlayer::native_get_movement_acceleration(player);
 
 	lua_newtable(L);
 	lua_pushnumber(L, mA[0]);
@@ -668,6 +693,7 @@ int LuaLocalPlayer::l_native_hud_remove(lua_State *L)
 	u32 id = luaL_checkinteger(L, 2);
 	HudElement *element = NativeLocalPlayer::native_hud_remove(player, id);
 
+
 	if (!element)
 		lua_pushboolean(L, false);
 	else
@@ -735,8 +761,8 @@ int LuaLocalPlayer::l_native_hud_get(lua_State *L)
 
 	u32 id = luaL_checkinteger(L, -1);
 
-	HudElement *e = NativeLocalPlayer::native_hud_get(player, id);
-	if (!e) {
+	HudElement *e = NativeLocalPlayer::native_hud_get(player,id);
+	if(!e){
 		lua_pushnil(L);
 		return 1;
 	}
@@ -804,10 +830,11 @@ void LuaLocalPlayer::Register(lua_State *L)
 
 const char LuaLocalPlayer::className[] = "LocalPlayer";
 const luaL_Reg LuaLocalPlayer::methods[] = {luamethod(LuaLocalPlayer, get_velocity),
+		luamethod(LuaLocalPlayer, get_velocity),
 		luamethod(LuaLocalPlayer, native_get_velocity),
-		luamethod(LuaLocalPlayer, get_hp),
+		luamethod(LuaLocalPlayer, get_hp), 
 		luamethod(LuaLocalPlayer, native_get_hp),
-		luamethod(LuaLocalPlayer, get_name),
+		luamethod(LuaLocalPlayer, get_name), 
 		luamethod(LuaLocalPlayer, native_get_name),
 		luamethod(LuaLocalPlayer, get_wield_index),
 		luamethod(LuaLocalPlayer, native_get_wield_index),
@@ -853,13 +880,13 @@ const luaL_Reg LuaLocalPlayer::methods[] = {luamethod(LuaLocalPlayer, get_veloci
 		luamethod(LuaLocalPlayer, native_get_movement),
 		luamethod(LuaLocalPlayer, get_armor_groups),
 		luamethod(LuaLocalPlayer, native_get_armor_groups),
-		luamethod(LuaLocalPlayer, hud_add),
+		luamethod(LuaLocalPlayer, hud_add), 
 		luamethod(LuaLocalPlayer, native_hud_add),
 		luamethod(LuaLocalPlayer, hud_remove),
 		luamethod(LuaLocalPlayer, native_hud_remove),
 		luamethod(LuaLocalPlayer, hud_change),
 		luamethod(LuaLocalPlayer, native_hud_change),
-		luamethod(LuaLocalPlayer, hud_get),
+		luamethod(LuaLocalPlayer, hud_get), 
 		luamethod(LuaLocalPlayer, native_hud_get),
 
 		{0, 0}

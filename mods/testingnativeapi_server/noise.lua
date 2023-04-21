@@ -19,6 +19,8 @@ loc3d = {x=1,y=1,z=1}
 sliceOffset={0,0,0}
 sliceSize={2,2,2}
 
+
+
 minetest.register_chatcommand("lua_noise_get2dmap", {
 	description = "Invokes lua_api > l_noise.l_lua_noise_get_2d_map",
 	func = function(self)
@@ -440,7 +442,6 @@ minetest.register_chatcommand("test_noise_nextPS", {
 		end
 	end
 })
-
 
 --command to test entire class
 minetest.register_chatcommand("test_noise", {

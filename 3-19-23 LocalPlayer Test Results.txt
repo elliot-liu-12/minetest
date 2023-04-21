@@ -1,0 +1,35 @@
+3/19/23 Test Results, manually tested in creatvive mode
+			
+			"getvelocity" PASS,
+			"gethp" PASS,
+			"getname" PASS,
+			"getwieldindex" PASS,
+			"getwieldeditem" PASS,
+			"isattached" PASS,
+			"istouchingground" PASS,
+			"isinliquid" PASS,
+			"isinliquidstable" PASS,
+			"getliquidviscosity" PASS,
+			"isclimbing" PASS,
+			"swimmingvertical" OK,
+			"getphysicsoverride" PASS,
+			"getlastpos" PASS,
+			"getlastvelocity" PASS,
+			"getlastlookvertical" RETURN ,
+			"getlastlookhorizontal" RETURN ,
+			"getcontrol" PASS,
+			"getbreath" PASS,
+			"getpos" PASS,
+			"getmovementacceleration" PASS,
+			"getmovementspeed" PASS,
+			"getmovement" PASS,
+			"getarmourgroups" OK,
+			"hudadd" PASS,
+			"hudremove" PASS,
+			"hudchange" PASS,
+			"hudget" PASS
+
+NOTES: 
+Armor is not default in game, requires additional mod to test. 
+Could not get swimming vertical to get true in lua/native version. I may be swimming wrong.
+Is_attached means player is in cart/horse other ridable thing

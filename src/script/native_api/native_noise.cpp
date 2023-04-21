@@ -76,8 +76,7 @@ int pcgRandom::native_rand_normal_dist(LuaPcgRandom *o, u32 min, u32 max, int tr
 	return o->getmrnd().randNormalDist(min, max, trials);
 }
 
-std::tuple<const char *, u32> secureRandom::native_next_bytes(
-		LuaSecureRandom *o, u32 count)
+std::tuple<const char *,u32>secureRandom::native_next_bytes(LuaSecureRandom *o, u32 count)
 {
 	u32 randomIDX = o->getRandidx();
 	char *randBuf = o->getRandbuf();
@@ -88,7 +87,8 @@ std::tuple<const char *, u32> secureRandom::native_next_bytes(
 	if (count_remaining >= count) {
 		retVal = randBuf + o->getRandidx();
 		c = count;
-		// lua_pushlstring(L, randBuf + o->getRandidx(), count);
+
+		//lua_pushlstring(L, randBuf + o->getRandidx(), count);
 		randomIDX += count;
 	} else {
 		char output_buf[2048];
@@ -97,6 +97,7 @@ std::tuple<const char *, u32> secureRandom::native_next_bytes(
 
 		o->fillRandBuf();
 		memcpy(output_buf + count_remaining, randBuf, count - count_remaining);
+
 
 		randomIDX = count - count_remaining;
 		retVal = output_buf;
@@ -110,7 +111,7 @@ int pseudoRandom::native_nextPS(LuaPseudoRandom *o, int min, int max)
 {
 	if (max < min) {
 		std::cout << "PseudoRandom.next(): max=" << max << " min=" << min
-			  << std::endl;
+			    << std::endl;
 		throw LuaError("PseudoRandom.next(): max < min");
 	}
 	if (max - min != 32767 && max - min > 32767 / 5)
