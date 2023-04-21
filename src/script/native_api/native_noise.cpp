@@ -87,6 +87,7 @@ std::tuple<const char *,u32>secureRandom::native_next_bytes(LuaSecureRandom *o, 
 	if (count_remaining >= count) {
 		retVal = randBuf + o->getRandidx();
 		c = count;
+
 		//lua_pushlstring(L, randBuf + o->getRandidx(), count);
 		randomIDX += count;
 	} else {
@@ -95,8 +96,8 @@ std::tuple<const char *,u32>secureRandom::native_next_bytes(LuaSecureRandom *o, 
 		memcpy(output_buf, randBuf + randomIDX, count_remaining);
 
 		o->fillRandBuf();
-		memcpy(output_buf + count_remaining, randBuf,
-				count - count_remaining);
+		memcpy(output_buf + count_remaining, randBuf, count - count_remaining);
+
 
 		randomIDX = count - count_remaining;
 		retVal = output_buf;

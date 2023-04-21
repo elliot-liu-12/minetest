@@ -1,17 +1,14 @@
 /*
 Minetest
 Copyright (C) 2017 Dumbeldor, Vincent Glize <vincent.glize@live.fr>
-
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
 the Free Software Foundation; either version 2.1 of the License, or
 (at your option) any later version.
-
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Lesser General Public License for more details.
-
 You should have received a copy of the GNU Lesser General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -71,7 +68,6 @@ int LuaLocalPlayer::l_native_get_velocity(lua_State *L)
 	return 1;
 }
 
-
 int LuaLocalPlayer::l_get_hp(lua_State *L)
 {
 	LocalPlayer *player = getobject(L, 1);
@@ -126,7 +122,6 @@ int LuaLocalPlayer::l_native_get_wield_index(lua_State *L)
 	lua_pushinteger(L, wieldIndex);
 	return 1;
 }
-
 
 // get_wielded_item(self)
 int LuaLocalPlayer::l_get_wielded_item(lua_State *L)
@@ -231,7 +226,6 @@ int LuaLocalPlayer::l_native_get_liquid_viscosity(lua_State *L)
 	return 1;
 }
 
-
 int LuaLocalPlayer::l_is_climbing(lua_State *L)
 {
 	LocalPlayer *player = getobject(L, 1);
@@ -249,7 +243,6 @@ int LuaLocalPlayer::l_native_is_climbing(lua_State *L)
 	lua_pushboolean(L, result);
 	return 1;
 }
-
 
 int LuaLocalPlayer::l_swimming_vertical(lua_State *L)
 {
@@ -392,7 +385,33 @@ int LuaLocalPlayer::l_get_control(lua_State *L)
 	LocalPlayer *player = getobject(L, 1);
 	const PlayerControl &c = player->getPlayerControl();
 
-	auto set = [L] (const char *name, bool value) {
+	auto set = [L](const char *name, bool value) {
+		lua_pushboolean(L, value);
+		lua_setfield(L, -2, name);
+	};
+
+	lua_createtable(L, 0, 12);
+	set("up", c.up);
+	set("down", c.down);
+	set("left", c.left);
+	set("right", c.right);
+	set("jump", c.jump);
+	set("aux1", c.aux1);
+	set("sneak", c.sneak);
+	set("zoom", c.zoom);
+	set("dig", c.dig);
+	set("place", c.place);
+
+	return 1;
+}
+
+// get_control(self) RETURN
+int LuaLocalPlayer::l_native_get_control(lua_State *L)
+{
+	LocalPlayer *player = getobject(L, 1);
+	const PlayerControl &c = NativeLocalPlayer::native_get_control(player);
+
+	auto set = [L](const char *name, bool value) {
 		lua_pushboolean(L, value);
 		lua_setfield(L, -2, name);
 	};
@@ -559,8 +578,6 @@ int LuaLocalPlayer::l_native_get_movement_speed(lua_State *L)
 	return 1;
 }
 
-
-
 // get_movement(self)
 int LuaLocalPlayer::l_get_movement(lua_State *L)
 {
@@ -605,7 +622,6 @@ int LuaLocalPlayer::l_native_get_movement(lua_State *L)
 
 	return 1;
 }
-
 
 // get_armor_groups(self)
 int LuaLocalPlayer::l_get_armor_groups(lua_State *L)
@@ -675,7 +691,8 @@ int LuaLocalPlayer::l_native_hud_remove(lua_State *L)
 {
 	LocalPlayer *player = getobject(L, 1);
 	u32 id = luaL_checkinteger(L, 2);
-	HudElement *element  = NativeLocalPlayer::native_hud_remove(player, id);
+	HudElement *element = NativeLocalPlayer::native_hud_remove(player, id);
+
 
 	if (!element)
 		lua_pushboolean(L, false);
@@ -812,7 +829,7 @@ void LuaLocalPlayer::Register(lua_State *L)
 }
 
 const char LuaLocalPlayer::className[] = "LocalPlayer";
-const luaL_Reg LuaLocalPlayer::methods[] = {
+const luaL_Reg LuaLocalPlayer::methods[] = {luamethod(LuaLocalPlayer, get_velocity),
 		luamethod(LuaLocalPlayer, get_velocity),
 		luamethod(LuaLocalPlayer, native_get_velocity),
 		luamethod(LuaLocalPlayer, get_hp), 
@@ -853,7 +870,7 @@ const luaL_Reg LuaLocalPlayer::methods[] = {
 		luamethod(LuaLocalPlayer, native_get_control),
 		luamethod(LuaLocalPlayer, get_breath),
 		luamethod(LuaLocalPlayer, native_get_breath),
-		luamethod(LuaLocalPlayer, get_pos), 
+		luamethod(LuaLocalPlayer, get_pos),
 		luamethod(LuaLocalPlayer, native_get_pos),
 		luamethod(LuaLocalPlayer, get_movement_acceleration),
 		luamethod(LuaLocalPlayer, native_get_movement_acceleration),

@@ -1,5 +1,6 @@
 #include "native_localplayer.h"
 
+
 v3f NativeLocalPlayer::native_get_velocity(LocalPlayer *p)
 {
 	return p->getSpeed();
@@ -10,15 +11,16 @@ int NativeLocalPlayer::native_get_hp(LocalPlayer *p)
 	return p->hp;
 }
 
-const char* NativeLocalPlayer::native_get_name(LocalPlayer *p)
+const char* NativeLocalPlayer::native_get_name(LocalPlayer* p)
 {
 	return p->getName();
 }
 
-u16 NativeLocalPlayer::native_get_wield_index(LocalPlayer *p)
+u16 NativeLocalPlayer::native_get_wield_index(LocalPlayer* p)
 {
 	return p->getWieldIndex();
 }
+
 
 ItemStack NativeLocalPlayer::native_get_wielded_item(LocalPlayer *p)
 {
@@ -31,10 +33,12 @@ bool NativeLocalPlayer::native_is_attached(LocalPlayer *p)
 	return (p->getParent() != nullptr);
 }
 
+
 bool NativeLocalPlayer::native_is_touching_ground(LocalPlayer *p)
 {
 	return p->touching_ground;
 }
+
 
 bool NativeLocalPlayer::native_is_in_liquid(LocalPlayer *p)
 {
@@ -51,10 +55,12 @@ int NativeLocalPlayer::native_get_liquid_viscosity(LocalPlayer *p)
 	return p->in_liquid_stable;
 }
 
+
 bool NativeLocalPlayer::native_is_climbing(LocalPlayer *p)
 {
 	return p->is_climbing;
 }
+
 
 bool NativeLocalPlayer::native_swimming_vertical(LocalPlayer *p)
 {
@@ -73,6 +79,7 @@ std::vector<int> NativeLocalPlayer::native_get_physics_override(LocalPlayer *p)
 	return v;
 }
 
+
 v3f NativeLocalPlayer::native_get_last_pos(LocalPlayer *p)
 {
 	return p->last_position;
@@ -84,6 +91,7 @@ v3f NativeLocalPlayer::native_get_last_velocity(LocalPlayer *p)
 }
 
 //RETURN to this, may be issue
+
 
 double NativeLocalPlayer::native_get_last_look_vertical(LocalPlayer *p)
 {
@@ -104,10 +112,12 @@ const PlayerControl& NativeLocalPlayer::native_get_control(LocalPlayer *p)
 	return p->getPlayerControl();
 }
 
+
 int NativeLocalPlayer::native_get_breath(LocalPlayer *p)
 {
 	return p->getBreath();
 }
+
 
 v3f NativeLocalPlayer::native_get_pos(LocalPlayer *p)
 {
@@ -115,7 +125,7 @@ v3f NativeLocalPlayer::native_get_pos(LocalPlayer *p)
 }
 
 std::vector<float> NativeLocalPlayer::native_get_movement_acceleration(
-		LocalPlayer *p)
+	LocalPlayer* p)
 {
 	std::vector<float> movA;
 	movA.push_back(p->movement_acceleration_default);
@@ -124,10 +134,11 @@ std::vector<float> NativeLocalPlayer::native_get_movement_acceleration(
 
 	return movA;
 }
-std::vector<float> NativeLocalPlayer::native_get_movement_speed(LocalPlayer *p)
+
+std::vector<float> NativeLocalPlayer::native_get_movement_speed(LocalPlayer* p)
 {
 	std::vector<float> movS;
-	
+  
 	movS.push_back(p->movement_speed_walk);
 	movS.push_back(p->movement_speed_crouch);
 	movS.push_back(p->movement_speed_fast);
@@ -149,10 +160,11 @@ std::vector<float> NativeLocalPlayer::native_get_movement(LocalPlayer *p)
 	return mov;
 }
 
-ItemGroupList NativeLocalPlayer::native_get_armour_groups(LocalPlayer *p)
+ItemGroupList NativeLocalPlayer::native_get_armour_groups(LocalPlayer* p)
 {
 	return p->getCAO()->getGroups();
 }
+
 
 u32 NativeLocalPlayer::native_hud_add(LocalPlayer *p, HudElement *elem)
 {
@@ -162,6 +174,22 @@ u32 NativeLocalPlayer::native_hud_add(LocalPlayer *p, HudElement *elem)
 HudElement *NativeLocalPlayer::native_hud_remove(LocalPlayer *p, u32 id)
 {
 	return p->removeHud(id);
+}
+
+HudElement* NativeLocalPlayer::native_hud_change(LocalPlayer* p, u32 id)
+{
+	HudElement* e = p->getHud(id);
+	if (e) {
+		return e;
+	}
+	else
+		return nullptr;
+}
+
+HudElement* NativeLocalPlayer::native_hud_get(LocalPlayer* p, u32 id)
+{
+	HudElement* e = p->getHud(id);
+	return e;
 }
 
 HudElement *NativeLocalPlayer::native_hud_change(LocalPlayer *p, u32 id)

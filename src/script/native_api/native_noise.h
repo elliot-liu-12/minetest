@@ -24,7 +24,6 @@ public:
 	// Helpers
 };
 
-
 class pcgRandom
 {
 public:
@@ -44,6 +43,5 @@ class pseudoRandom
 {
 public:
 	static int native_nextPS(LuaPseudoRandom *o, int min, int max);
-
 
 };
