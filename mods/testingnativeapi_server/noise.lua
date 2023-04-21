@@ -269,6 +269,178 @@ minetest.register_chatcommand("test_noise_getmapslice", {
 	end
 })
 
+--TESTS for PCGRandom Class
+
+minetest.register_chatcommand("lua_noise_next", {
+	description = "Invokes lua_api > l_noise.l_lua_noise_next",
+	func = function(self)
+		local PCGrand = PcgRandom(42)
+        local res = PCGrand:next(25, 250)
+        if res then
+            return true, "Success, next() returned: "..res
+        else
+            return false, "Failed to return random #" 
+        end
+	end
+})
+
+minetest.register_chatcommand("native_noise_next", {
+	description = "Invokes lua_api > l_noise.l_native_lua_noise_next",
+	func = function(self)
+		local PCGrand = PcgRandom(42)
+        local res = PCGrand:native_next(25, 250)
+        if res then
+            return true, "Success, native_next() returned: "..res
+        else
+            return false, "Failed to return random #" 
+        end
+	end
+})
+
+minetest.register_chatcommand("test_noise_next", {
+	description = "Invokes lua_api > l_noise.l_native_noise_next",
+	func = function(self)
+        local PCGrand1 = PcgRandom(42)
+		local PCGrand2 = PcgRandom(42)
+
+		local lua =  PCGrand1:next(25, 250)
+		local native =  PCGrand2:native_next(25, 250)
+		if lua == native then
+			return true, "(Success) [Noise] next()"
+		else
+			return false, "(Fail) [Noise] next()"
+		end
+	end
+})
+
+minetest.register_chatcommand("lua_noise_randnormaldist", {
+	description = "Invokes lua_api > l_noise.l_native_rand_normal_dist",
+	func = function(self)
+		local PCGrand = PcgRandom(42)
+        local res = PCGrand:rand_normal_dist(25, 250,4)
+        if res then
+            return true, "Success, rand_normal_dist() returned: "..dump(res)
+        else
+            return false, "Failed to return random dist" 
+        end
+	end
+})
+
+minetest.register_chatcommand("native_noise_randnormaldist", {
+	description = "Invokes lua_api > l_noise.l_native_rand_normal_dist",
+	func = function(self)
+		local PCGrand = PcgRandom(42)
+        local res = PCGrand:native_rand_normal_dist(25, 250,4)
+        if res then
+            return true, "Success, native_rand_normal_dist() returned: "..dump(res)
+        else
+            return false, "Failed to return random dist" 
+        end
+	end
+})
+
+minetest.register_chatcommand("test_noise_randnormaldist", {
+	description = "Invokes lua_api > l_noise.l_native_rand_normal_dist",
+	func = function(self)
+        local PCGrand1 = PcgRandom(42)
+		local PCGrand2 = PcgRandom(42)
+
+		local lua =  PCGrand1:rand_normal_dist(25, 250,4)
+		local native =  PCGrand2:native_rand_normal_dist(25, 250,4)
+		if lua == native then
+			return true, "(Success) [Noise] rand_normal_dist()"
+		else
+			return false, "(Fail) [Noise] rand_normal_dist()"
+		end
+	end
+})
+
+--TESTS for SecureRandom Class
+
+minetest.register_chatcommand("lua_noise_nextbytes", {
+	description = "Invokes lua_api > l_noise.l_lua_next_bytes",
+	func = function(self)
+		SECrand = SecureRandom(42)
+        local res = SECrand:next_bytes(4)
+        if res then
+            return true, "Success, next_bytes() returned: "..dump(res)
+        else
+            return false, "Failed to return next bytes" 
+        end
+	end
+})
+
+minetest.register_chatcommand("native_noise_nextbytes", {
+	description = "Invokes lua_api > l_noise.l_native_next_bytes",
+	func = function(self)
+		SECrand = SecureRandom(42)
+        local res = SECrand:native_next_bytes(4)
+        if res then
+            return true, "Success, native_next_bytes() returned: "..dump(res)
+        else
+            return false, "Failed to return next bytes" 
+        end
+	end
+})
+--Unlike random numbers, there is no seed for bytes, so they will likely never be the same value
+minetest.register_chatcommand("test_noise_nextbytes", {
+	description = "Asserts lua api and native api behaviors for l_noise_next_bytes",
+	func = function(self)
+		SECrand1 = SecureRandom(42)
+		SECrand2 = SecureRandom(42)
+        local lua = SECrand1:next_bytes(25,250)
+		local native = SECrand2:next_bytes(25,250)
+        if lua ~= native then
+			return true, "(Success) [Noise] next_bytes()"
+		else
+			return false, "(Fail) [Noise] next_bytes()"
+		end
+	end
+})
+
+--TESTS for pseudoRandom Class
+
+minetest.register_chatcommand("lua_noise_nextPS", {
+	description = "Invokes lua_api > l_noise.l_lua_next (PS)",
+	func = function(self)
+		local PSrand = PseudoRandom(42)
+        local res = PSrand:next(25,250)
+        if res then
+            return true, "Success, next_PS() returned: "..dump(res)
+        else
+            return false, "Failed to return next pseudoRandom num" 
+        end
+	end
+})
+
+minetest.register_chatcommand("native_noise_nextPS", {
+	description = "Invokes lua_api > l_noise.l_lua_next (PS)",
+	func = function(self)
+		local PSrand = PseudoRandom(42)
+        local res = PSrand:native_nextPS(25,250)
+        if res then
+            return true, "Success, next_PS() returned: "..dump(res)
+        else
+            return false, "Failed to return next pseudoRandom num" 
+        end
+	end
+})
+
+minetest.register_chatcommand("test_noise_nextPS", {
+	description = "Asserts lua api and native api behaviors for l_noise_nextPS",
+	func = function(self)
+		local PSrand = PseudoRandom(42)
+		local PSrand2 = PseudoRandom(42)
+        local lua = PSrand:next(25,250)
+		local native = PSrand2:native_nextPS(25,250)
+		if lua == native then
+			return true, "(Success) [Noise] nextPS()"
+		else
+			return false, "(Fail) [Noise] nextPS()"
+		end
+	end
+})
+
 
 --command to test entire class
 minetest.register_chatcommand("test_noise", {
@@ -282,7 +454,11 @@ minetest.register_chatcommand("test_noise", {
 			"get3dmapflat",
 			"calc2dmap",
 			"calc3dmap",
-			"getmapslice"
+			"getmapslice",
+			"next",
+			"randnormaldist",
+			"nextPS",
+			"nextbytes"
 		}
 
 		return native_tests.test_class("noise", methods), 

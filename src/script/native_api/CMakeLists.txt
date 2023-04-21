@@ -5,12 +5,15 @@ set(common_SCRIPT_NATIVE_API_SRCS
 	${CMAKE_CURRENT_SOURCE_DIR}/native_item.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/native_particles.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/native_nodetimer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/native_noise.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/native_settings.cpp
 	PARENT_SCOPE)
 
 set(client_SCRIPT_NATIVE_API_SRCS
 	${CMAKE_CURRENT_SOURCE_DIR}/native_minimap.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/native_camera.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/native_client.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/native_localplayer.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/native_particles_local.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/native_sound.cpp
 	PARENT_SCOPE)

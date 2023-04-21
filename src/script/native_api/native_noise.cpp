@@ -65,3 +65,61 @@ bool NativeNoise::mapis3d(LuaPerlinNoiseMap *o)
 
 	return true;
 }
+
+int pcgRandom::native_next(LuaPcgRandom *o, u32 min, u32 max)
+{
+	return o->getmrnd().range(min, max);
+}
+
+int pcgRandom::native_rand_normal_dist(LuaPcgRandom *o, u32 min, u32 max, int trials)
+{
+	return o->getmrnd().randNormalDist(min, max, trials);
+}
+
+std::tuple<const char *, u32> secureRandom::native_next_bytes(
+		LuaSecureRandom *o, u32 count)
+{
+	u32 randomIDX = o->getRandidx();
+	char *randBuf = o->getRandbuf();
+	const char *retVal;
+	int c;
+
+	size_t count_remaining = 2048 - o->getRandidx();
+	if (count_remaining >= count) {
+		retVal = randBuf + o->getRandidx();
+		c = count;
+		// lua_pushlstring(L, randBuf + o->getRandidx(), count);
+		randomIDX += count;
+	} else {
+		char output_buf[2048];
+
+		memcpy(output_buf, randBuf + randomIDX, count_remaining);
+
+		o->fillRandBuf();
+		memcpy(output_buf + count_remaining, randBuf, count - count_remaining);
+
+		randomIDX = count - count_remaining;
+		retVal = output_buf;
+		c = count;
+	}
+
+	return std::make_tuple(retVal, c);
+}
+
+int pseudoRandom::native_nextPS(LuaPseudoRandom *o, int min, int max)
+{
+	if (max < min) {
+		std::cout << "PseudoRandom.next(): max=" << max << " min=" << min
+			  << std::endl;
+		throw LuaError("PseudoRandom.next(): max < min");
+	}
+	if (max - min != 32767 && max - min > 32767 / 5)
+		throw LuaError("PseudoRandom.next() max-min is not 32767"
+			       " and is > 32768/5. This is disallowed due to"
+			       " the bad random distribution the"
+			       " implementation would otherwise make.");
+	PseudoRandom &pseudo = o->getmpseudo();
+	int val = pseudo.next();
+	val = (val % (max - min + 1)) + min;
+	return val;
+}

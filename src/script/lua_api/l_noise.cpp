@@ -1,17 +1,14 @@
 /*
 Minetest
 Copyright (C) 2013 celeron55, Perttu Ahola <celeron55@gmail.com>
-
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
 the Free Software Foundation; either version 2.1 of the License, or
 (at your option) any later version.
-
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Lesser General Public License for more details.
-
 You should have received a copy of the GNU Lesser General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -31,11 +28,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   LuaPerlinNoise
 */
 
-LuaPerlinNoise::LuaPerlinNoise(NoiseParams *params) :
-	np(*params)
+LuaPerlinNoise::LuaPerlinNoise(NoiseParams *params) : np(*params)
 {
 }
-
 
 int LuaPerlinNoise::l_get_2d(lua_State *L)
 {
@@ -47,7 +42,6 @@ int LuaPerlinNoise::l_get_2d(lua_State *L)
 	return 1;
 }
 
-
 int LuaPerlinNoise::l_get_3d(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
@@ -58,7 +52,6 @@ int LuaPerlinNoise::l_get_3d(lua_State *L)
 	return 1;
 }
 
-
 int LuaPerlinNoise::create_object(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
@@ -68,10 +61,10 @@ int LuaPerlinNoise::create_object(lua_State *L)
 	if (lua_istable(L, 1)) {
 		read_noiseparams(L, 1, &params);
 	} else {
-		params.seed    = luaL_checkint(L, 1);
+		params.seed = luaL_checkint(L, 1);
 		params.octaves = luaL_checkint(L, 2);
 		params.persist = readParam<float>(L, 3);
-		params.spread  = v3f(1, 1, 1) * readParam<float>(L, 4);
+		params.spread = v3f(1, 1, 1) * readParam<float>(L, 4);
 	}
 
 	LuaPerlinNoise *o = new LuaPerlinNoise(&params);
@@ -82,14 +75,12 @@ int LuaPerlinNoise::create_object(lua_State *L)
 	return 1;
 }
 
-
 int LuaPerlinNoise::gc_object(lua_State *L)
 {
 	LuaPerlinNoise *o = *(LuaPerlinNoise **)(lua_touserdata(L, 1));
 	delete o;
 	return 0;
 }
-
 
 LuaPerlinNoise *LuaPerlinNoise::checkobject(lua_State *L, int narg)
 {
@@ -100,7 +91,6 @@ LuaPerlinNoise *LuaPerlinNoise::checkobject(lua_State *L, int narg)
 		luaL_typerror(L, narg, className);
 	return *(LuaPerlinNoise **)ud;
 }
-
 
 void LuaPerlinNoise::Register(lua_State *L)
 {
@@ -129,13 +119,9 @@ void LuaPerlinNoise::Register(lua_State *L)
 	lua_register(L, className, create_object);
 }
 
-
 const char LuaPerlinNoise::className[] = "PerlinNoise";
-luaL_Reg LuaPerlinNoise::methods[] = {
-	luamethod_aliased(LuaPerlinNoise, get_2d, get2d),
-	luamethod_aliased(LuaPerlinNoise, get_3d, get3d),
-	{0,0}
-};
+luaL_Reg LuaPerlinNoise::methods[] = {luamethod_aliased(LuaPerlinNoise, get_2d, get2d),
+		luamethod_aliased(LuaPerlinNoise, get_3d, get3d), {0, 0}};
 
 ///////////////////////////////////////
 /*
@@ -153,12 +139,10 @@ LuaPerlinNoiseMap::LuaPerlinNoiseMap(NoiseParams *params, s32 seed, v3s16 size)
 	}
 }
 
-
 LuaPerlinNoiseMap::~LuaPerlinNoiseMap()
 {
 	delete noise;
 }
-
 
 int LuaPerlinNoiseMap::l_get_2d_map(lua_State *L)
 {
@@ -191,7 +175,7 @@ int LuaPerlinNoiseMap::l_native_get_2d_map(lua_State *L)
 	LuaPerlinNoiseMap *o = checkobject(L, 1);
 	v2f p = readParam<v2f>(L, 2);
 
-	Noise *n = NativeNoise::native_get_2d_map(o,p);
+	Noise *n = NativeNoise::native_get_2d_map(o, p);
 
 	lua_createtable(L, n->sy, 0);
 	for (u32 y = 0; y != n->sy; y++) {
@@ -204,8 +188,6 @@ int LuaPerlinNoiseMap::l_native_get_2d_map(lua_State *L)
 	}
 	return 1;
 }
-
-
 
 int LuaPerlinNoiseMap::l_get_2d_map_flat(lua_State *L)
 {
@@ -317,14 +299,13 @@ int LuaPerlinNoiseMap::l_native_get_3d_map(lua_State *L)
 	return 1;
 }
 
-
 int LuaPerlinNoiseMap::l_get_3d_map_flat(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
 
 	LuaPerlinNoiseMap *o = checkobject(L, 1);
-	v3f p                = check_v3f(L, 2);
-	bool use_buffer      = lua_istable(L, 3);
+	v3f p = check_v3f(L, 2);
+	bool use_buffer = lua_istable(L, 3);
 
 	if (!NativeNoise::mapis3d(o))
 		return 0;
@@ -375,7 +356,6 @@ int LuaPerlinNoiseMap::l_native_get_3d_map_flat(lua_State *L)
 	return 1;
 }
 
-
 int LuaPerlinNoiseMap::l_calc_2d_map(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
@@ -401,13 +381,12 @@ int LuaPerlinNoiseMap::l_native_calc_2d_map(lua_State *L)
 	return 0;
 }
 
-
 int LuaPerlinNoiseMap::l_calc_3d_map(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
 
 	LuaPerlinNoiseMap *o = checkobject(L, 1);
-	v3f p                = check_v3f(L, 2);
+	v3f p = check_v3f(L, 2);
 
 	if (!o->m_is3d)
 		return 0;
@@ -417,7 +396,6 @@ int LuaPerlinNoiseMap::l_calc_3d_map(lua_State *L)
 
 	return 0;
 }
-
 
 int LuaPerlinNoiseMap::l_native_calc_3d_map(lua_State *L)
 {
@@ -429,20 +407,19 @@ int LuaPerlinNoiseMap::l_native_calc_3d_map(lua_State *L)
 	if (!NativeNoise::mapis3d(o))
 		return 0;
 
-	NativeNoise::native_calc_3d_map(o,p);
+	NativeNoise::native_calc_3d_map(o, p);
 
 	return 0;
 }
-
 
 int LuaPerlinNoiseMap::l_get_map_slice(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
 
 	LuaPerlinNoiseMap *o = checkobject(L, 1);
-	v3s16 slice_offset   = read_v3s16(L, 2);
-	v3s16 slice_size     = read_v3s16(L, 3);
-	bool use_buffer      = lua_istable(L, 4);
+	v3s16 slice_offset = read_v3s16(L, 2);
+	v3s16 slice_size = read_v3s16(L, 3);
+	bool use_buffer = lua_istable(L, 4);
 
 	Noise *n = o->noise;
 
@@ -451,10 +428,9 @@ int LuaPerlinNoiseMap::l_get_map_slice(lua_State *L)
 	else
 		lua_newtable(L);
 
-	write_array_slice_float(L, lua_gettop(L), n->result,
-		v3u16(n->sx, n->sy, n->sz),
-		v3u16(slice_offset.X, slice_offset.Y, slice_offset.Z),
-		v3u16(slice_size.X, slice_size.Y, slice_size.Z));
+	write_array_slice_float(L, lua_gettop(L), n->result, v3u16(n->sx, n->sy, n->sz),
+			v3u16(slice_offset.X, slice_offset.Y, slice_offset.Z),
+			v3u16(slice_size.X, slice_size.Y, slice_size.Z));
 
 	return 1;
 }
@@ -478,12 +454,11 @@ int LuaPerlinNoiseMap::l_native_get_map_slice(lua_State *L)
 	else
 		lua_newtable(L);
 
-	write_array_slice_float(L, lua_gettop(L), n->result,
-	std::get<0>(s), std::get<1>(s), std::get<2>(s));
+	write_array_slice_float(L, lua_gettop(L), n->result, std::get<0>(s),
+			std::get<1>(s), std::get<2>(s));
 
 	return 1;
 }
-
 
 int LuaPerlinNoiseMap::create_object(lua_State *L)
 {
@@ -499,14 +474,12 @@ int LuaPerlinNoiseMap::create_object(lua_State *L)
 	return 1;
 }
 
-
 int LuaPerlinNoiseMap::gc_object(lua_State *L)
 {
 	LuaPerlinNoiseMap *o = *(LuaPerlinNoiseMap **)(lua_touserdata(L, 1));
 	delete o;
 	return 0;
 }
-
 
 LuaPerlinNoiseMap *LuaPerlinNoiseMap::checkobject(lua_State *L, int narg)
 {
@@ -518,7 +491,6 @@ LuaPerlinNoiseMap *LuaPerlinNoiseMap::checkobject(lua_State *L, int narg)
 
 	return *(LuaPerlinNoiseMap **)ud;
 }
-
 
 void LuaPerlinNoiseMap::Register(lua_State *L)
 {
@@ -547,25 +519,28 @@ void LuaPerlinNoiseMap::Register(lua_State *L)
 	lua_register(L, className, create_object);
 }
 
-
 const char LuaPerlinNoiseMap::className[] = "PerlinNoiseMap";
 luaL_Reg LuaPerlinNoiseMap::methods[] = {
-	luamethod_aliased(LuaPerlinNoiseMap, get_2d_map,      get2dMap),
-	luamethod_aliased(LuaPerlinNoiseMap, native_get_2d_map, native_get2d_Map),
-	luamethod_aliased(LuaPerlinNoiseMap, get_2d_map_flat, get2dMap_flat),
-	luamethod_aliased(LuaPerlinNoiseMap, native_get_2d_map_flat, native_get2dMap_flat),
-	luamethod_aliased(LuaPerlinNoiseMap, calc_2d_map,     calc2dMap),
-	luamethod_aliased(LuaPerlinNoiseMap, native_calc_2d_map, native_calc2dMap),
-	luamethod_aliased(LuaPerlinNoiseMap, get_3d_map,      get3dMap),
-	luamethod_aliased(LuaPerlinNoiseMap, native_get_3d_map, native_get3dMap),
-	luamethod_aliased(LuaPerlinNoiseMap, get_3d_map_flat, get3dMap_flat),
-	luamethod_aliased(LuaPerlinNoiseMap, native_get_3d_map_flat, native_get3dMap_flat),
-	luamethod_aliased(LuaPerlinNoiseMap, calc_3d_map,     calc3dMap),
-	luamethod_aliased(LuaPerlinNoiseMap, native_calc_3d_map, native_calc3dMap),
-	luamethod_aliased(LuaPerlinNoiseMap, get_map_slice,   getMapSlice),
-	luamethod_aliased(LuaPerlinNoiseMap, native_get_map_slice, native_getMapSlice),
-	{0,0}
-};
+		luamethod_aliased(LuaPerlinNoiseMap, get_2d_map, get2dMap),
+		luamethod_aliased(LuaPerlinNoiseMap, native_get_2d_map, native_get2d_Map),
+		luamethod_aliased(LuaPerlinNoiseMap, get_2d_map_flat, get2dMap_flat),
+		luamethod_aliased(LuaPerlinNoiseMap, native_get_2d_map_flat,
+				native_get2dMap_flat),
+		luamethod_aliased(LuaPerlinNoiseMap, calc_2d_map, calc2dMap),
+		luamethod_aliased(
+				LuaPerlinNoiseMap, native_calc_2d_map, native_calc2dMap),
+		luamethod_aliased(LuaPerlinNoiseMap, get_3d_map, get3dMap),
+		luamethod_aliased(LuaPerlinNoiseMap, native_get_3d_map, native_get3dMap),
+		luamethod_aliased(LuaPerlinNoiseMap, get_3d_map_flat, get3dMap_flat),
+		luamethod_aliased(LuaPerlinNoiseMap, native_get_3d_map_flat,
+				native_get3dMap_flat),
+		luamethod_aliased(LuaPerlinNoiseMap, calc_3d_map, calc3dMap),
+		luamethod_aliased(
+				LuaPerlinNoiseMap, native_calc_3d_map, native_calc3dMap),
+		luamethod_aliased(LuaPerlinNoiseMap, get_map_slice, getMapSlice),
+		luamethod_aliased(LuaPerlinNoiseMap, native_get_map_slice,
+				native_getMapSlice),
+		{0, 0}};
 
 ///////////////////////////////////////
 /*
@@ -585,21 +560,40 @@ int LuaPseudoRandom::l_next(lua_State *L)
 	if (lua_isnumber(L, 3))
 		max = luaL_checkinteger(L, 3);
 	if (max < min) {
-		errorstream<<"PseudoRandom.next(): max="<<max<<" min="<<min<<std::endl;
+		errorstream << "PseudoRandom.next(): max=" << max << " min=" << min
+			    << std::endl;
 		throw LuaError("PseudoRandom.next(): max < min");
 	}
-	if(max - min != 32767 && max - min > 32767/5)
+	if (max - min != 32767 && max - min > 32767 / 5)
 		throw LuaError("PseudoRandom.next() max-min is not 32767"
-				" and is > 32768/5. This is disallowed due to"
-				" the bad random distribution the"
-				" implementation would otherwise make.");
+			       " and is > 32768/5. This is disallowed due to"
+			       " the bad random distribution the"
+			       " implementation would otherwise make.");
 	PseudoRandom &pseudo = o->m_pseudo;
 	int val = pseudo.next();
-	val = (val % (max-min+1)) + min;
+	val = (val % (max - min + 1)) + min;
 	lua_pushinteger(L, val);
 	return 1;
 }
 
+int LuaPseudoRandom::l_native_nextPS(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+
+	LuaPseudoRandom *o = checkobject(L, 1);
+	int min = 0;
+	int max = 32767;
+	lua_settop(L, 3);
+	if (lua_isnumber(L, 2))
+		min = luaL_checkinteger(L, 2);
+	if (lua_isnumber(L, 3))
+		max = luaL_checkinteger(L, 3);
+
+	int v = pseudoRandom::native_nextPS(o, min, max);
+
+	lua_pushinteger(L, v);
+	return 1;
+}
 
 int LuaPseudoRandom::create_object(lua_State *L)
 {
@@ -613,14 +607,12 @@ int LuaPseudoRandom::create_object(lua_State *L)
 	return 1;
 }
 
-
 int LuaPseudoRandom::gc_object(lua_State *L)
 {
 	LuaPseudoRandom *o = *(LuaPseudoRandom **)(lua_touserdata(L, 1));
 	delete o;
 	return 0;
 }
-
 
 LuaPseudoRandom *LuaPseudoRandom::checkobject(lua_State *L, int narg)
 {
@@ -630,7 +622,6 @@ LuaPseudoRandom *LuaPseudoRandom::checkobject(lua_State *L, int narg)
 		luaL_typerror(L, narg, className);
 	return *(LuaPseudoRandom **)ud;
 }
-
 
 void LuaPseudoRandom::Register(lua_State *L)
 {
@@ -659,12 +650,14 @@ void LuaPseudoRandom::Register(lua_State *L)
 	lua_register(L, className, create_object);
 }
 
+PseudoRandom LuaPseudoRandom::getmpseudo()
+{
+	return m_pseudo;
+}
 
 const char LuaPseudoRandom::className[] = "PseudoRandom";
-const luaL_Reg LuaPseudoRandom::methods[] = {
-	luamethod(LuaPseudoRandom, next),
-	{0,0}
-};
+const luaL_Reg LuaPseudoRandom::methods[] = {luamethod(LuaPseudoRandom, next),
+		luamethod(LuaPseudoRandom, native_nextPS), {0, 0}};
 
 ///////////////////////////////////////
 /*
@@ -683,6 +676,19 @@ int LuaPcgRandom::l_next(lua_State *L)
 	return 1;
 }
 
+int LuaPcgRandom::l_native_next(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+
+	LuaPcgRandom *o = checkobject(L, 1);
+	u32 min = lua_isnumber(L, 2) ? lua_tointeger(L, 2) : o->m_rnd.RANDOM_MIN;
+	u32 max = lua_isnumber(L, 3) ? lua_tointeger(L, 3) : o->m_rnd.RANDOM_MAX;
+
+	int result = pcgRandom::native_next(o, min, max);
+
+	lua_pushinteger(L, result);
+	return 1;
+}
 
 int LuaPcgRandom::l_rand_normal_dist(lua_State *L)
 {
@@ -697,21 +703,33 @@ int LuaPcgRandom::l_rand_normal_dist(lua_State *L)
 	return 1;
 }
 
+int LuaPcgRandom::l_native_rand_normal_dist(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+
+	LuaPcgRandom *o = checkobject(L, 1);
+	u32 min = lua_isnumber(L, 2) ? lua_tointeger(L, 2) : o->m_rnd.RANDOM_MIN;
+	u32 max = lua_isnumber(L, 3) ? lua_tointeger(L, 3) : o->m_rnd.RANDOM_MAX;
+	int num_trials = lua_isnumber(L, 4) ? lua_tointeger(L, 4) : 6;
+
+	int result = pcgRandom::native_rand_normal_dist(o, min, max, num_trials);
+
+	lua_pushinteger(L, result);
+	return 1;
+}
 
 int LuaPcgRandom::create_object(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
 
 	u64 seed = luaL_checknumber(L, 1);
-	LuaPcgRandom *o = lua_isnumber(L, 2) ?
-		new LuaPcgRandom(seed, lua_tointeger(L, 2)) :
-		new LuaPcgRandom(seed);
+	LuaPcgRandom *o = lua_isnumber(L, 2) ? new LuaPcgRandom(seed, lua_tointeger(L, 2))
+					     : new LuaPcgRandom(seed);
 	*(void **)(lua_newuserdata(L, sizeof(void *))) = o;
 	luaL_getmetatable(L, className);
 	lua_setmetatable(L, -2);
 	return 1;
 }
-
 
 int LuaPcgRandom::gc_object(lua_State *L)
 {
@@ -719,7 +737,6 @@ int LuaPcgRandom::gc_object(lua_State *L)
 	delete o;
 	return 0;
 }
-
 
 LuaPcgRandom *LuaPcgRandom::checkobject(lua_State *L, int narg)
 {
@@ -729,7 +746,6 @@ LuaPcgRandom *LuaPcgRandom::checkobject(lua_State *L, int narg)
 		luaL_typerror(L, narg, className);
 	return *(LuaPcgRandom **)ud;
 }
-
 
 void LuaPcgRandom::Register(lua_State *L)
 {
@@ -758,13 +774,16 @@ void LuaPcgRandom::Register(lua_State *L)
 	lua_register(L, className, create_object);
 }
 
+PcgRandom LuaPcgRandom::getmrnd()
+{
+	return m_rnd;
+}
 
 const char LuaPcgRandom::className[] = "PcgRandom";
-const luaL_Reg LuaPcgRandom::methods[] = {
-	luamethod(LuaPcgRandom, next),
-	luamethod(LuaPcgRandom, rand_normal_dist),
-	{0,0}
-};
+const luaL_Reg LuaPcgRandom::methods[] = {luamethod(LuaPcgRandom, next),
+		luamethod(LuaPcgRandom, native_next),
+		luamethod(LuaPcgRandom, rand_normal_dist),
+		luamethod(LuaPcgRandom, native_rand_normal_dist), {0, 0}};
 
 ///////////////////////////////////////
 /*
@@ -799,7 +818,8 @@ int LuaSecureRandom::l_next_bytes(lua_State *L)
 
 		// Refill buffer and copy over the remainder of what was requested
 		o->fillRandBuf();
-		memcpy(output_buf + count_remaining, o->m_rand_buf, count - count_remaining);
+		memcpy(output_buf + count_remaining, o->m_rand_buf,
+				count - count_remaining);
 
 		// Update index
 		o->m_rand_idx = count - count_remaining;
@@ -810,6 +830,20 @@ int LuaSecureRandom::l_next_bytes(lua_State *L)
 	return 1;
 }
 
+int LuaSecureRandom::l_native_next_bytes(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+
+	LuaSecureRandom *o = checkobject(L, 1);
+	u32 count = lua_isnumber(L, 2) ? lua_tointeger(L, 2) : 1;
+
+	count = MYMIN(RAND_BUF_SIZE, count);
+
+	std::tuple<const char *, u32> retVal = secureRandom::native_next_bytes(o, count);
+	lua_pushlstring(L, std::get<0>(retVal), std::get<1>(retVal));
+
+	return 1;
+}
 
 int LuaSecureRandom::create_object(lua_State *L)
 {
@@ -827,14 +861,12 @@ int LuaSecureRandom::create_object(lua_State *L)
 	return 1;
 }
 
-
 int LuaSecureRandom::gc_object(lua_State *L)
 {
 	LuaSecureRandom *o = *(LuaSecureRandom **)(lua_touserdata(L, 1));
 	delete o;
 	return 0;
 }
-
 
 LuaSecureRandom *LuaSecureRandom::checkobject(lua_State *L, int narg)
 {
@@ -844,7 +876,6 @@ LuaSecureRandom *LuaSecureRandom::checkobject(lua_State *L, int narg)
 		luaL_typerror(L, narg, className);
 	return *(LuaSecureRandom **)ud;
 }
-
 
 void LuaSecureRandom::Register(lua_State *L)
 {
@@ -873,8 +904,16 @@ void LuaSecureRandom::Register(lua_State *L)
 	lua_register(L, className, create_object);
 }
 
+u32 LuaSecureRandom::getRandidx()
+{
+	return m_rand_idx;
+}
+
+char *LuaSecureRandom::getRandbuf()
+{
+	return m_rand_buf;
+}
+
 const char LuaSecureRandom::className[] = "SecureRandom";
-const luaL_Reg LuaSecureRandom::methods[] = {
-	luamethod(LuaSecureRandom, next_bytes),
-	{0,0}
-};
+const luaL_Reg LuaSecureRandom::methods[] = {luamethod(LuaSecureRandom, next_bytes),
+		luamethod(LuaSecureRandom, native_next_bytes), {0, 0}};
