@@ -297,11 +297,13 @@ int ModApiParticlesLocal::l_native_add_particlespawner(lua_State *L)
 
 	p.node_tile = getintfield_default(L, 1, "node_tile", p.node_tile);
 
-	NativeApiParticlesLocal::native_add_particlespawner(getClient(L), &p.amount,
+	u64 id = NativeApiParticlesLocal::native_add_particlespawner(getClient(L), &p.amount,
 			&p.minpos, &p.maxpos, &p.minvel, &p.maxvel, &p.minacc, &p.maxacc,
 			&p.time, &p.minexptime, &p.maxexptime, &p.minsize, &p.maxsize,
 			&p.collisiondetection, &p.vertical, &p.collision_removal,
 			&p.animation, &p.texture, &p.glow, &p.node, &p.node_tile);
+
+	lua_pushnumber(L, id);
 
 	return 1;
 }
