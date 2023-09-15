@@ -8,7 +8,8 @@ minetest.register_chatcommand("test_client_classes", {
 			"camera",
       		"client",
 			"minimap",
-			"item"
+			"item",
+			"modchannels"
 		}
 
 		--test each class
