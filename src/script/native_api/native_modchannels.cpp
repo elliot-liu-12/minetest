@@ -3,8 +3,8 @@
 
 int NativeModChannelRef::native_leave(ModChannelRef *ref, IGameDef *gamedefpointer)
 {
-	std::string result = ref->get_m_modchannel_name();
-	gamedefpointer->leaveModChannel(result);
+	std::string name = ref->get_m_modchannel_name();
+	gamedefpointer->leaveModChannel(name);
 	return 0;
 }
 
