@@ -23,3 +23,25 @@ public:
 
 	// Helpers
 };
+
+class pcgRandom
+{
+public:
+	static int native_next(LuaPcgRandom *o, u32 min, u32 max);
+	static int native_rand_normal_dist(LuaPcgRandom *o, u32 min, u32 max, int trials);
+};
+
+class secureRandom
+{
+public:
+	static std::tuple<const char *, u32> native_next_bytes(
+			LuaSecureRandom *o, u32 count);
+
+};
+
+class pseudoRandom
+{
+public:
+	static int native_nextPS(LuaPseudoRandom *o, int min, int max);
+
+};

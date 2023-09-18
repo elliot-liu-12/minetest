@@ -27,6 +27,8 @@ texture = "default_stone.png",
 playername = "singleplayer",
 }
 
+count = 0
+
 minetest.register_chatcommand("lua_particles_local_addparticle", {
 	func = function(self)
 		local res = minetest.add_particle(particle)
@@ -61,6 +63,7 @@ minetest.register_chatcommand("lua_particles_local_addparticlespawner", {
 		then 
 			return false, "Fail, add_particlespawner() was not called."
 		else
+			count = count + 1
 			return true, "Success, add_particlespawner() was called."
 		end
 	end
@@ -73,6 +76,7 @@ minetest.register_chatcommand("native_particles_local_addparticlespawner", {
 		then 
 			return false, "Fail, add_particlespawner() was not called."
 		else
+			count = count + 1
 			return true, "Success, add_particlespawner() was called."
 		end
 	end
@@ -81,7 +85,7 @@ minetest.register_chatcommand("test_particles_local_addparticlespawner", {
 	func = function(self)
 		local lua = minetest.add_particlespawner(particlespawner)
 		local native = minetest.native_add_particlespawner(particlespawner)
-		if (native ~= null and lua ~= null) 
+		if (native ~= nil and lua ~= nil) 
 		then 
 			return true, "Success."
 		else
@@ -93,26 +97,34 @@ minetest.register_chatcommand("test_particles_local_addparticlespawner", {
 minetest.register_chatcommand("lua_particles_local_delparticlespawner", {
 	description = "Invokes lua_api > l_particles.l_delete_particlespawner",
 	func = function(self)
-		if (spawner_id == null or spawner_id == 0)  
+		if (spawner_id == -1 or count <= 0)  
 		then
 			return false, "There is no particlespawner to delete!"
 		else
 			print(spawner_id)
-			minetest.delete_particlespawner(spawner_id, particlespawner.playername)
-			spawner_id = spawner_id - 1
+			minetest.delete_particlespawner(spawner_id)
+			if (count >= 0) 
+			then 
+				spawner_id = spawner_id - 1
+				count = count - 1
+			end
 			return true, "Success, delete_particlespawner() deleted the particlespawner."
 		end
 	end
 })
 minetest.register_chatcommand("native_particles_local_delparticlespawner", {
 	func = function(self)
-		if (spawner_id == null or spawner_id == 0)  
+		if (spawner_id == -1 or count <= 0)  
 		then
 			return false, "There is no particlespawner to delete!"
 		else
 			print(spawner_id)
-			minetest.native_delete_particlespawner(spawner_id, particlespawner.playername)
-			spawner_id = spawner_id - 1
+			minetest.native_delete_particlespawner(spawner_id)
+			if (count >= 0) 
+			then 
+				spawner_id = spawner_id - 1
+				count = count - 1
+			end
 			return true, "Success, delete_particlespawner() deleted the particlespawner."
 		end
 	end
@@ -125,5 +137,21 @@ minetest.register_chatcommand("test_particles_local_delparticlespawner", {
 		else
 			return false, "Fail, lua and native api behaviors do not match."
 		end
+	end
+})
+
+--command to test entire class
+minetest.register_chatcommand("test_particles_local", {
+	description = "testing all particles_local methods",
+	func = function()
+
+		local methods = {
+			"addparticle",
+			"addparticlespawner",
+			"delparticlespawner"
+		}
+
+		return native_tests.test_class("particles_local", methods), 
+		"Particles_local tests completed. See console for details."
 	end
 })
