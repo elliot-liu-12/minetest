@@ -22,6 +22,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "lua_api/l_modchannels.h"
 #include "l_internal.h"
 #include "modchannels.h"
+#include "../native_api/native_modchannels.h"
+#include <tuple>
 
 int ModApiChannels::l_mod_channel_join(lua_State *L)
 {
@@ -55,37 +57,6 @@ ModChannelRef::ModChannelRef(const std::string &modchannel) :
 {
 }
 
-int ModChannelRef::l_leave(lua_State *L)
-{
-	ModChannelRef *ref = checkobject(L, 1);
-	getGameDef(L)->leaveModChannel(ref->m_modchannel_name);
-	return 0;
-}
-
-int ModChannelRef::l_send_all(lua_State *L)
-{
-	ModChannelRef *ref = checkobject(L, 1);
-	ModChannel *channel = getobject(L, ref);
-	if (!channel || !channel->canWrite())
-		return 0;
-
-	// @TODO serialize message
-	std::string message = luaL_checkstring(L, 2);
-
-	getGameDef(L)->sendModChannelMessage(channel->getName(), message);
-	return 0;
-}
-
-int ModChannelRef::l_is_writeable(lua_State *L)
-{
-	ModChannelRef *ref = checkobject(L, 1);
-	ModChannel *channel = getobject(L, ref);
-	if (!channel)
-		return 0;
-
-	lua_pushboolean(L, channel->canWrite());
-	return 1;
-}
 void ModChannelRef::Register(lua_State *L)
 {
 	lua_newtable(L);
@@ -148,6 +119,101 @@ const luaL_Reg ModChannelRef::methods[] = {
 	luamethod(ModChannelRef, leave),
 	luamethod(ModChannelRef, is_writeable),
 	luamethod(ModChannelRef, send_all),
+
+	// register testing methods
+	luamethod(ModChannelRef, native_leave),
+	luamethod(ModChannelRef, native_is_writeable),
+	luamethod(ModChannelRef, native_send_all),
+
 	{0, 0},
 };
+
 // clang-format on
+
+int ModChannelRef::l_leave(lua_State *L)
+{
+	ModChannelRef *ref = checkobject(L, 1);
+	getGameDef(L)->leaveModChannel(ref->m_modchannel_name);
+	return 0;
+}
+
+int ModChannelRef::l_native_leave(lua_State *L)
+{
+	// Get parameters
+	ModChannelRef *ref = checkobject(L, 1);
+	// check if got value
+	if (!ref)
+		return 1;
+
+	// call native function
+	IGameDef *myGameDef = getGameDef(L);
+	int result = NativeModChannelRef::native_leave(ref, myGameDef);
+	
+	return 0;
+}
+
+int ModChannelRef::l_is_writeable(lua_State *L)
+{
+	ModChannelRef *ref = checkobject(L, 1);
+	ModChannel *channel = getobject(L, ref);
+	if (!channel)
+		return 0;
+
+	lua_pushboolean(L, channel->canWrite());
+	return 1;
+}
+
+int ModChannelRef::l_native_is_writeable(lua_State *L)
+{
+	// Get parameters
+	ModChannelRef *ref = checkobject(L, 1);
+	ModChannel *channel = getobject(L, ref);
+
+	// check if got value
+	if (!ref || !channel)
+		return 0;
+
+	// call native function
+	bool result = NativeModChannelRef::native_is_writeable(channel);
+
+	lua_pushboolean(L, result);
+	return 1;
+}
+
+int ModChannelRef::l_send_all(lua_State *L)
+{
+	ModChannelRef *ref = checkobject(L, 1);
+	ModChannel *channel = getobject(L, ref);
+	if (!channel || !channel->canWrite())
+		return 0;
+
+	// @TODO serialize message
+	std::string message = luaL_checkstring(L, 2);
+
+	getGameDef(L)->sendModChannelMessage(channel->getName(), message);
+	return 0;
+}
+
+int ModChannelRef::l_native_send_all(lua_State *L)
+{
+	// Get parameters
+	ModChannelRef *ref = checkobject(L, 1);
+	ModChannel *channel = getobject(L, ref);
+
+	// check param
+	if (!channel || !channel->canWrite())
+		return 0;
+
+	// @TODO serialize message
+	std::string message = luaL_checkstring(L, 2);
+	
+	IGameDef *myGameDef = getGameDef(L);
+	int result = NativeModChannelRef::native_send_all(channel, message, myGameDef);
+
+	return 0;
+}
+
+std::string ModChannelRef::get_m_modchannel_name()
+{
+	return m_modchannel_name;
+}

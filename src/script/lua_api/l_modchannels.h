@@ -21,6 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "lua_api/l_base.h"
 #include "config.h"
+#include <tuple>
 
 class ModChannel;
 
@@ -51,6 +52,14 @@ public:
 
 	// is_writeable()
 	static int l_is_writeable(lua_State *L);
+
+	// New lua functions to call corresponding native functions
+	static int l_native_leave(lua_State *L);
+	static int l_native_send_all(lua_State *L);
+	static int l_native_is_writeable(lua_State *L);
+
+	//getter
+	std::string get_m_modchannel_name();
 
 private:
 	// garbage collector
