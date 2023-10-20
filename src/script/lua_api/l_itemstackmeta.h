@@ -68,5 +68,6 @@ public:
 
 	static void Register(lua_State *L);
 
+	//TO-DO fully separate l_itemstackmeta from native counterpart.
 	friend class NativeItemStackMetaRef;
 };
