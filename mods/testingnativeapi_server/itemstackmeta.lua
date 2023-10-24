@@ -8,54 +8,44 @@ minetest.log("--itemstackmeta class tests--")
 minetest.register_chatcommand("lua_itemstackmeta_set_tool_capabilities", {
     description = "test itemstackmeta class method set_tool_capabilities() (lua version)",
     func = function(self)
-        --local istack = minetest.getmeta(true);
-        --local tool = ItemStackMetaDataRef::get_meta(true);
+        
         local player = minetest.get_player_by_name("singleplayer");
-        --local inv = player:get_inventory();
-        --local stack = inv:get_stack("hand", 1);
-       
-        minetest.log("made it here!\n\n\n\n\n\n\n\n\n\n\n");
-        
+        local inv = player:get_inventory();
+        local itemstack = ItemStack("default:pick_diamond");
+        local meta = itemstack:get_meta();
+
         local tool_capabilities = {
-		full_punch_interval = 1.0,
-		max_drop_level=1,
-		groupcaps={
-			cracky = {times={[1]=4.00, [2]=1.60, [3]=0.80}, uses=20, maxlevel=2},
-		},
-		damage_groups = {fleshy=4},
-	};
-        local inv = player:get_inventory()
-        local stack = inv:get_stack("hand", 1)
-        --stack:set_tool_capabilities(tool_capabilities)
-        --inv:set_stack("hand", 1, stack)
-
-        --pmeta=player:get_meta()
-        --pmeta:set_string(digmulti,1.1)
-        --local tool = ItemStack("default:pick_diamond");
-        --tool:set_tool_capabilities(tool_capabilities)
-
-        --local internal_name = stack
-        --local tool = ItemStack("default:pick_diamond");
-        --local caps = tool::getToolCapabilities();
-        --minetest.log(caps)
-
-        local item = player:get_wielded_item();
-        minetest.log("The player's wielded item is " ..dump(item:to_string()));
-        --item:ItemStackMetaRef()
-
-	    local meta = item:get_meta();
-        --minetest.log(item:get_meta().uses())
-        meta:set_tool_capabilities(tool_capabilities);
-        inv:set_stack(item:to_string(), 1, stack)
-        --minetest.log(tool:get_meta().uses)
-        minetest.log("made it here too!\n\n\n\n\n\n\n\n\n\n\n");
-        --inv:set_stack("hand", 1, stack);
+            full_punch_interval = 1.5,
+            max_drop_level = 1,
+            groupcaps = {
+                cracky = {
+                    maxlevel = 2,
+                    uses = 20,
+                    times = { [1]=1.60, [2]=1.20, [3]=0.80 }
+                },
+            },
+            damage_groups = {fleshy=2},
+        }
         
-        local res = nil;
+        local res = meta:set_tool_capabilities(tool_capabilities);
+        --spawn modded pickaxe (inv position 1)
+        inv:set_stack("main", 1, itemstack);
+
+        --spawn normal pickaxe for comparison (inv position 2)
+        local itemstack2 = ItemStack("default:pick_diamond");
+        inv:set_stack("main", 2, itemstack2);
+
+        --spawn modded pickaxe with nil as toolcaps (inv position 3)
+        local itemstack3 = ItemStack("default:pick_diamond");
+        local meta2 = itemstack3:get_meta();
+        local res2 = meta2:set_tool_capabilities(nil);
+        inv:set_stack("main", 3, itemstack3);
+
         if res == nil then 
-            return true, "Success, set_tool_capabilities() returned: nil"
-        else
-            return true, "Success, set_tool_capabilities() returned: not nil"
+            return true, "Success, set_tool_capabilities() returned: nil, tool caps applied"
+        end
+        if res2 == nil then
+            return true, "Success, set_tool_capabilities() returned: nil, tool caps cleared"
         end
     end
 })
@@ -64,7 +54,44 @@ minetest.register_chatcommand("lua_itemstackmeta_set_tool_capabilities", {
 minetest.register_chatcommand("native_itemstackmeta_set_tool_capabilities", {
     description = "test itemstackmeta class method set_tool_capabilities() (native version)",
     func = function(self)
+        local player = minetest.get_player_by_name("singleplayer");
+        local inv = player:get_inventory();
+        local itemstack = ItemStack("default:pick_diamond");
+        local meta = itemstack:get_meta();
+
+        local tool_capabilities = {
+            full_punch_interval = 1.5,
+            max_drop_level = 1,
+            groupcaps = {
+                cracky = {
+                    maxlevel = 2,
+                    uses = 20,
+                    times = { [1]=1.60, [2]=1.20, [3]=0.80 }
+                },
+            },
+            damage_groups = {fleshy=2},
+        }
         
+        local res = meta:native_set_tool_capabilities(tool_capabilities);
+        --spawn modded pickaxe (inv position 1)
+        inv:set_stack("main", 1, itemstack);
+
+        --spawn normal pickaxe for comparison (inv position 2)
+        local itemstack2 = ItemStack("default:pick_diamond");
+        inv:set_stack("main", 2, itemstack2);
+
+        --spawn modded pickaxe with nil as toolcaps (inv position 3)
+        local itemstack3 = ItemStack("default:pick_diamond");
+        local meta2 = itemstack3:get_meta();
+        local res2 = meta2:native_set_tool_capabilities(nil);
+        inv:set_stack("main", 3, itemstack3);
+
+        if res == nil then 
+            return true, "Success, native_set_tool_capabilities() returned: nil, tool caps applied"
+        end
+        if res2 == nil then
+            return true, "Success, native_set_tool_capabilities() returned: nil, tool caps cleared"
+        end
     end
 })
 
