@@ -14,5 +14,5 @@ struct ToolCapabilities;
 class NativeItemStackMetaRef : public MetaDataRef
 {
 public:
-	static int native_set_tool_capabilities(ItemStackMetaRef *metaref, ToolCapabilities caps, int x);
+	static int native_set_tool_capabilities(ItemStackMetaRef *metaref, int x, ToolCapabilities caps);
 };

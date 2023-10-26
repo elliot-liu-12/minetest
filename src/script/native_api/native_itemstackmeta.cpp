@@ -1,6 +1,6 @@
 #include "native_itemstackmeta.h"
 
-int NativeItemStackMetaRef::native_set_tool_capabilities(ItemStackMetaRef *metaref, ToolCapabilities caps, int x)
+int NativeItemStackMetaRef::native_set_tool_capabilities(ItemStackMetaRef *metaref, int x, ToolCapabilities caps = 0)
 {
 	if (x == 1) {
 		metaref->clearToolCapabilities();

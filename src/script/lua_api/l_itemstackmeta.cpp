@@ -73,12 +73,12 @@ int ItemStackMetaRef::l_native_set_tool_capabilities(lua_State *L)
 	ItemStackMetaRef *metaref = checkobject(L, 1);
 	bool x = lua_isnoneornil(L, 2);
 	bool y = lua_istable(L, 2);
-	ToolCapabilities caps = read_tool_capabilities(L, 2);
 	
 	if (x) {
-		NativeItemStackMetaRef::native_set_tool_capabilities(metaref, caps, 1);
+		NativeItemStackMetaRef::native_set_tool_capabilities(metaref, 1, 0);
 	} else if (y) {
-		NativeItemStackMetaRef::native_set_tool_capabilities(metaref, caps, 0);
+		ToolCapabilities caps = read_tool_capabilities(L, 2);
+		NativeItemStackMetaRef::native_set_tool_capabilities(metaref, 0, caps);
 	} else {
 		luaL_typerror(L, 2, "table or nil");
 	}
