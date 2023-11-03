@@ -22,6 +22,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "lua_api/l_itemstackmeta.h"
 #include "lua_api/l_internal.h"
 #include "common/c_content.h"
+#include "native_api/native_itemstackmeta.h"
+#include <tuple>
 
 /*
 	NodeMetaRef
@@ -63,7 +65,23 @@ int ItemStackMetaRef::l_set_tool_capabilities(lua_State *L)
 	} else {
 		luaL_typerror(L, 2, "table or nil");
 	}
+	return 0;
+}
 
+int ItemStackMetaRef::l_native_set_tool_capabilities(lua_State *L)
+{
+	ItemStackMetaRef *metaref = checkobject(L, 1);
+	bool x = lua_isnoneornil(L, 2);
+	bool y = lua_istable(L, 2);
+	
+	if (x) {
+		NativeItemStackMetaRef::native_set_tool_capabilities(metaref, 1, 0);
+	} else if (y) {
+		ToolCapabilities caps = read_tool_capabilities(L, 2);
+		NativeItemStackMetaRef::native_set_tool_capabilities(metaref, 0, caps);
+	} else {
+		luaL_typerror(L, 2, "table or nil");
+	}
 	return 0;
 }
 
@@ -135,5 +153,6 @@ const luaL_Reg ItemStackMetaRef::methods[] = {
 	luamethod(MetaDataRef, from_table),
 	luamethod(MetaDataRef, equals),
 	luamethod(ItemStackMetaRef, set_tool_capabilities),
+	luamethod(ItemStackMetaRef, native_set_tool_capabilities),
 	{0,0}
 };
