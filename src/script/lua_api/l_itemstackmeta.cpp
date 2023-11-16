@@ -23,6 +23,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "lua_api/l_internal.h"
 #include "common/c_content.h"
 #include "native_api/native_itemstackmeta.h"
+#include "native_api/native_metadata.h"
 #include <tuple>
 
 /*
@@ -154,5 +155,16 @@ const luaL_Reg ItemStackMetaRef::methods[] = {
 	luamethod(MetaDataRef, equals),
 	luamethod(ItemStackMetaRef, set_tool_capabilities),
 	luamethod(ItemStackMetaRef, native_set_tool_capabilities),
+	luamethod(MetaDataRef, native_contains), 
+	luamethod(MetaDataRef, native_get),
+	luamethod(MetaDataRef, native_get_string), 
+	luamethod(MetaDataRef, native_set_string),
+	luamethod(MetaDataRef, native_get_int), 
+	luamethod(MetaDataRef, native_set_int),
+	luamethod(MetaDataRef, native_get_float), 
+	luamethod(MetaDataRef, native_set_float),
+	luamethod(MetaDataRef, native_to_table), 
+	luamethod(MetaDataRef, native_from_table),
+	luamethod(MetaDataRef, native_equals),
 	{0,0}
 };

@@ -8,6 +8,8 @@ set(common_SCRIPT_NATIVE_API_SRCS
 	${CMAKE_CURRENT_SOURCE_DIR}/native_settings.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/native_nodetimer.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/native_modchannels.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/native_itemstackmeta.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/native_metadata.cpp
 	PARENT_SCOPE)
 
 set(client_SCRIPT_NATIVE_API_SRCS
