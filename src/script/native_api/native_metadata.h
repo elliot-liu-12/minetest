@@ -17,7 +17,7 @@ public: //TODO supposed to be protected instead
 	static int native_contains(Metadata* meta, std::string name);
 
 	// get(self, name)
-	static std::string native_get(Metadata *meta, std::string name, std::string str);
+	static std::string native_get(Metadata *meta, std::string name, std::string str, MetaDataRef *ref);
 
 	// get_string(self, name)
 	static std::string native_get_string(Metadata *meta, std::string name, std::string str);

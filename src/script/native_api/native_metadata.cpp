@@ -8,7 +8,7 @@ int NativeMetaDataRef::native_contains(Metadata* meta, std::string name)
 	return 0;
 }
 
-std::string NativeMetaDataRef::native_get(Metadata* meta, std::string name, std::string str)
+std::string NativeMetaDataRef::native_get(Metadata *meta, std::string name, std::string str, MetaDataRef *ref)
 {
 	bool condition = meta->getStringToRef(name, str);
 	if (condition) {
@@ -19,7 +19,7 @@ std::string NativeMetaDataRef::native_get(Metadata* meta, std::string name, std:
 
 std::string  NativeMetaDataRef::native_get_string(Metadata *meta, std::string name, std::string str)
 {
-	const std::string &str = "";
+	str = "";
 	str = meta->getString(name);
 	return str;
 }

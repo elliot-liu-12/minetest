@@ -115,17 +115,17 @@ int MetaDataRef::l_native_get(lua_State *L)
 
 	MetaDataRef *ref = checkobject(L, 1);
 	std::string name = luaL_checkstring(L, 2);
-
 	Metadata *meta = ref->getmeta(false);
+	
 	if (meta == NULL)
 		return 0;
-
-	std::string str = NativeMetaDataRef::native_get(meta, name, str);
-
+	
+	std::string str = NativeMetaDataRef::native_get(meta, name, str, ref);
 	if (str != "") {
 		lua_pushlstring(L, str.c_str(), str.size());
 		return 1;
 	}
+
 	return 0;
 }
 
