@@ -8,20 +8,19 @@ int NativeMetaDataRef::native_contains(Metadata* meta, std::string name)
 	return 0;
 }
 
-std::string NativeMetaDataRef::native_get(Metadata *meta, std::string name, std::string str, MetaDataRef *ref)
+int NativeMetaDataRef::native_get(Metadata *meta, std::string name, std::string &str)
 {
 	bool condition = meta->getStringToRef(name, str);
 	if (condition) {
-		return str;
+		return 1;
 	}
-	return "";
+	return 0;
 }
 
-std::string  NativeMetaDataRef::native_get_string(Metadata *meta, std::string name, std::string str)
+int NativeMetaDataRef::native_get_string(Metadata *meta, std::string name, std::string &str)
 {
-	str = "";
 	str = meta->getString(name);
-	return str;
+	return 0;
 }
 
 int NativeMetaDataRef::native_set_string(Metadata *meta, std::string name, std::string str, MetaDataRef *ref)
@@ -31,11 +30,9 @@ int NativeMetaDataRef::native_set_string(Metadata *meta, std::string name, std::
 	return 0;
 }
 
-std::string NativeMetaDataRef::native_get_int(Metadata *meta, std::string name, MetaDataRef *ref)
-{
-	std::string result = "";
-	meta = ref->getmeta(false);
-	
+std::string NativeMetaDataRef::native_get_int(Metadata *meta, std::string name, std::string &result)
+{	
+	result = "";
 	if (meta == NULL) {
 		return result;
 	}
@@ -62,7 +59,6 @@ int NativeMetaDataRef::native_set_int(Metadata *meta, std::string name, MetaData
 
 std::string NativeMetaDataRef::native_get_float(Metadata *meta, std::string name, MetaDataRef *ref)
 {
-	meta = ref->getmeta(false);
 	if (meta == NULL) {
 		return "";
 	}
@@ -74,7 +70,6 @@ std::string NativeMetaDataRef::native_get_float(Metadata *meta, std::string name
 
 int NativeMetaDataRef::native_set_float(Metadata *meta, std::string name, MetaDataRef *ref, float a)
 {
-	meta = ref->getmeta(true);
 	std::string str = ftos(a);
 
 	if (meta == NULL || str == meta->getString(name)) {
@@ -89,8 +84,6 @@ int NativeMetaDataRef::native_set_float(Metadata *meta, std::string name, MetaDa
 
 int NativeMetaDataRef::native_to_table(Metadata *meta, MetaDataRef *ref)
 {
-	meta = ref->getmeta(true);
-	
 	if (meta == NULL) {
 		return -1;
 	}
@@ -100,8 +93,6 @@ int NativeMetaDataRef::native_to_table(Metadata *meta, MetaDataRef *ref)
 
 int NativeMetaDataRef::native_from_table(Metadata *meta, MetaDataRef *ref)
 {
-	meta = ref->getmeta(true);
-	
 	if (meta == NULL) {
 		return -1;
 	}

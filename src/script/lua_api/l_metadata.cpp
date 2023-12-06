@@ -115,18 +115,17 @@ int MetaDataRef::l_native_get(lua_State *L)
 
 	MetaDataRef *ref = checkobject(L, 1);
 	std::string name = luaL_checkstring(L, 2);
+
 	Metadata *meta = ref->getmeta(false);
-	
 	if (meta == NULL)
 		return 0;
 	
-	std::string str = NativeMetaDataRef::native_get(meta, name, str, ref);
-	if (str != "") {
+	std::string str;
+	int result = NativeMetaDataRef::native_get(meta, name, str);
+	if (result = 1) {
 		lua_pushlstring(L, str.c_str(), str.size());
-		return 1;
 	}
-
-	return 0;
+	return result;
 }
 
 // get_string(self, name)
@@ -161,12 +160,9 @@ int MetaDataRef::l_native_get_string(lua_State *L)
 		return 1;
 	}
 
-	std::string str = NativeMetaDataRef::native_get_string(meta, name, str);
-
-	if (str != "") {
-		lua_pushlstring(L, str.c_str(), str.size());
-	}
-
+	std::string str;
+	int result = NativeMetaDataRef::native_get_string(meta, name, str);
+	lua_pushlstring(L, str.c_str(), str.size());
 	return 1;
 }
 
@@ -235,14 +231,15 @@ int MetaDataRef::l_native_get_int(lua_State *L)
 	MetaDataRef *ref = checkobject(L, 1);
 	std::string name = luaL_checkstring(L, 2);
 
-	Metadata *meta;
-	std::string result = NativeMetaDataRef::native_get_int(meta, name, ref);
+	Metadata *meta = meta = ref->getmeta(false);
+	
+	std::string result;
+	result = NativeMetaDataRef::native_get_int(meta, name, result);
 
 	if (result == "") {
 		lua_pushnumber(L, 0);
 		return 1;
 	}
-
 	lua_pushnumber(L, stoi(result));
 
 	return 1;
@@ -276,7 +273,7 @@ int MetaDataRef::l_native_set_int(lua_State *L)
 	int a = luaL_checkint(L, 3);
 	std::string str = itos(a);
 
-	Metadata *meta;
+	Metadata *meta = ref->getmeta(true);
 	int result = NativeMetaDataRef::native_set_int(meta, name, ref, a);
 
 	return 0;
@@ -308,7 +305,7 @@ int MetaDataRef::l_native_get_float(lua_State *L)
 	MetaDataRef *ref = checkobject(L, 1);
 	std::string name = luaL_checkstring(L, 2);
 
-	Metadata *meta; 
+	Metadata *meta = ref->getmeta(false); 
 	std::string result = NativeMetaDataRef::native_get_float(meta, name, ref);
 
 	if (result == "") {
@@ -347,7 +344,7 @@ int MetaDataRef::l_native_set_float(lua_State *L)
 	std::string name = luaL_checkstring(L, 2);
 	float a = readParam<float>(L, 3);
 
-	Metadata *meta;
+	Metadata *meta = ref->getmeta(true);
 	int result = NativeMetaDataRef::native_set_float(meta, name, ref, a);
 
 	return 0;
@@ -378,7 +375,7 @@ int MetaDataRef::l_native_to_table(lua_State *L)
 
 	MetaDataRef *ref = checkobject(L, 1);
 
-	Metadata *meta;
+	Metadata *meta = ref->getmeta(true);
 	int result = NativeMetaDataRef::native_to_table(meta, ref);
 
 	if (result == -1) {
@@ -436,7 +433,7 @@ int MetaDataRef::l_native_from_table(lua_State *L)
 	}
 
 	// Create new metadata
-	Metadata *meta;
+	Metadata *meta = ref->getmeta(true);
 	int result = NativeMetaDataRef::native_from_table(meta, ref);
 
 	if (result == -1) {

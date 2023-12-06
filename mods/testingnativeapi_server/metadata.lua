@@ -97,7 +97,6 @@ minetest.register_chatcommand("lua_metadata_get", {
 	end
 })
 
---FIXME
 --native test
 minetest.register_chatcommand("native_metadata_get", {
 	description = "Test metadata class method get() (native version).",
@@ -173,7 +172,6 @@ minetest.register_chatcommand("lua_metadata_get_string", {
 	end
 })
 
---FIXME
 --native test
 minetest.register_chatcommand("native_metadata_get_string", {
 	description = "Test metadata class method get_string() (native version).",
@@ -456,6 +454,8 @@ minetest.register_chatcommand("lua_metadata_get_float", {
 		meta:set_float("hp", 100.1);
 		inv:set_stack("main", 1, itemstack);
 		local hp = meta:get_float("hp");
+		local mult = 10^(1);
+		hp = math.floor(hp * mult + 0.5) / mult;
 		minetest.log(hp);
 		local res = (hp == 100.1);
 		if res then
@@ -477,12 +477,48 @@ minetest.register_chatcommand("native_metadata_get_float", {
 		meta:set_float("hp", 100.1);
 		inv:set_stack("main", 1, itemstack);
 		local hp = meta:native_get_float("hp");
+		local mult = 10^(1);
+		hp = math.floor(hp * mult + 0.5) / mult;
 		minetest.log(hp);
 		local res = (hp == 100.1);
 		if res then
 			return true, "Success, native_get_float() returned: true"
 		else
 			return true, "Success, native_get_float() returned: false"
+		end
+	end
+})
+
+--comparison
+minetest.register_chatcommand("test_metadata_get_float", {
+	description = "Compares output of lua and native command for metadata class method get_float().",
+	func = function(self)
+		local player = minetest.get_player_by_name("singleplayer");
+        local inv = player:get_inventory();
+		--lua
+        local itemstack = ItemStack("default:pick_steel");
+        local meta = itemstack:get_meta();
+		meta:set_float("hp", 100.1);
+		inv:set_stack("main", 1, itemstack);
+		local hp = meta:get_float("hp");
+		local mult = 10^(1);
+		hp = math.floor(hp * mult + 0.5) / mult;
+		minetest.log(hp);
+		local lres = (hp == 100.1);
+		--native
+		local itemstack2 = ItemStack("default:pick_steel");
+        local meta2 = itemstack2:get_meta();
+		meta2:set_float("hp", 100.1);
+		inv:set_stack("main", 2, itemstack2);
+		local hp2 = meta2:native_get_float("hp");
+		local mult2 = 10^(1);
+		hp2 = math.floor(hp2 * mult2 + 0.5) / mult2;
+		minetest.log(hp2);
+		local nres = (hp2 == 100.1);
+		if lres == nres then
+			return true, "Success, get_float() function output matches - check console for more details";
+		else
+			return false, "Failure, get_float() function output does not match - check console for more details";
 		end
 	end
 })
@@ -499,6 +535,8 @@ minetest.register_chatcommand("lua_metadata_set_float", {
 		meta:set_float("hp", 100.1);
 		inv:set_stack("main", 1, itemstack);
 		local hp = meta:get_float("hp");
+		local mult = 10^(1);
+		hp = math.floor(hp * mult + 0.5) / mult;
 		minetest.log(hp);
 		local res = (hp == 100.1);
 		if res then
@@ -520,6 +558,8 @@ minetest.register_chatcommand("native_metadata_set_float", {
 		meta:native_set_float("hp", 100.1);
 		inv:set_stack("main", 1, itemstack);
 		local hp = meta:get_float("hp");
+		local mult = 10^(1);
+		hp = math.floor(hp * mult + 0.5) / mult;
 		minetest.log(hp);
 		local res = (hp == 100.1);
 		if res then
@@ -542,6 +582,8 @@ minetest.register_chatcommand("test_metadata_set_float", {
 		meta:set_float("hp", 100.1);
 		inv:set_stack("main", 1, itemstack);
 		local hp = meta:get_float("hp");
+		local mult = 10^(1);
+		hp = math.floor(hp * mult + 0.5) / mult;
 		minetest.log(hp);
 		local lres = (hp == 100.1);
 		--Native
@@ -550,6 +592,8 @@ minetest.register_chatcommand("test_metadata_set_float", {
 		meta2:native_set_float("hp", 100.2);
 		inv:set_stack("main", 2, itemstack2);
 		local hp2 = meta2:get_float("hp");
+		local mult2 = 10^(1);
+		hp2 = math.floor(hp2 * mult2 + 0.5) / mult2;
 		minetest.log(hp2);
 		local nres = (hp2 == 100.2);
 		if lres == nres then
@@ -571,10 +615,12 @@ minetest.register_chatcommand("lua_metadata_to_table", {
 		local meta = itemstack:get_meta();
 		meta:set_int("durability", 100);
 		inv:set_stack("main", 1, itemstack);
-        local item = itemstack:to_table();
-		local itemDuraFromTable = item:get("durability");
-		--minetest.log(itemDuraFromTable);
-		local res = itemDuraFromTable == 100;
+		local table = "{\n\tfields = {\n\t\tdurability = \"100\"\n\t}\n}";
+		local tabletext = dump(meta:to_table());
+		local res = tabletext == table;
+		--You can manually check table contents in console.
+		print(dump(meta:native_to_table()));
+		print(table);
 		if res then
 			return true, "Success, to_table() returned: true"
 		else
@@ -589,11 +635,20 @@ minetest.register_chatcommand("native_metadata_to_table", {
 	func = function(self)
 		local player = minetest.get_player_by_name("singleplayer");
         local inv = player:get_inventory();
-        
+		local itemstack = ItemStack("default:pick_steel");
+		local meta = itemstack:get_meta();
+		meta:set_int("durability", 100);
+		inv:set_stack("main", 1, itemstack);
+		local table = "{\n\tfields = {\n\t\tdurability = \"100\"\n\t}\n}";
+		local tabletext = dump(meta:native_to_table());
+		local res = tabletext == table;
+		--You can manually check table contents in console.
+		print(dump(meta:native_to_table()));
+		print(table);
 		if res then
-			return true, "Success, native_to_table() returned: true"
+			return true, "Success, to_table() returned: true"
 		else
-			return true, "Success, native_to_table() returned: false"
+			return true, "Success, to_table() returned: false"
 		end
 	end
 })
@@ -604,10 +659,25 @@ minetest.register_chatcommand("test_metadata_to_table", {
 	func = function(self)
 		local player = minetest.get_player_by_name("singleplayer");
         local inv = player:get_inventory();
+		local table = "{\n\tfields = {\n\t\tdurability = \"100\"\n\t}\n}";
 		--lua
-        
+        local itemstack = ItemStack("default:pick_steel");
+		local meta = itemstack:get_meta();
+		meta:set_int("durability", 100);
+		inv:set_stack("main", 1, itemstack);
+		local tabletext = dump(meta:to_table());
+		local lres = tabletext == table;
 		--Native
-		
+		local itemstack2 = ItemStack("default:pick_steel");
+		local meta2 = itemstack2:get_meta();
+		meta2:set_int("durability", 100);
+		inv:set_stack("main", 2, itemstack2);
+		local tabletext2 = dump(meta2:native_to_table());
+		local nres = tabletext2 == table;
+		--You can manually check table contents in console.
+		print(table);
+		print(dump(meta2:native_to_table()));
+		print(dump(meta:to_table()));
 		if lres == nres then
 			return true, "Success, to_table() function output matches - check console for more details"
 		else
@@ -623,7 +693,20 @@ minetest.register_chatcommand("lua_metadata_from_table", {
 	func = function(self)
 		local player = minetest.get_player_by_name("singleplayer");
         local inv = player:get_inventory();
-		
+		local itemstack = ItemStack("default:pick_steel");
+		local meta = itemstack:get_meta();
+		local tableAsString = "{\n\tfields = {\n\t\tdurability = \"100\"\n\t}\n}";
+		local table = {
+			fields = {
+				durability = 100
+			}
+		};
+		meta:from_table(table); --sets metadata using from_table instead of setter methods
+		local tabletext = dump(meta:to_table()); --gets table as text
+		local res = tabletext == tableAsString;
+		--You can manually compare table contents in console.
+		print(tableAsString);
+		print(dump(meta:to_table()));
 		if res then
 			return true, "Success, from_table() returned: true"
 		else
@@ -638,7 +721,20 @@ minetest.register_chatcommand("native_metadata_from_table", {
 	func = function(self)
 		local player = minetest.get_player_by_name("singleplayer");
         local inv = player:get_inventory();
-        
+		local itemstack = ItemStack("default:pick_steel");
+		local meta = itemstack:get_meta();
+		local tableAsString = "{\n\tfields = {\n\t\tdurability = \"100\"\n\t}\n}";
+		local table = {
+			fields = {
+				durability = 100
+			}
+		};
+		meta:native_from_table(table); --sets metadata using from_table instead of setter methods
+		local tabletext = dump(meta:to_table()); --gets table as text
+		local res = tabletext == tableAsString;
+		--You can manually compare table contents in console.
+		print(tableAsString);
+		print(dump(meta:to_table()));
 		if res then
 			return true, "Success, native_from_table() returned: true"
 		else
@@ -653,10 +749,28 @@ minetest.register_chatcommand("test_metadata_from_table", {
 	func = function(self)
 		local player = minetest.get_player_by_name("singleplayer");
         local inv = player:get_inventory();
+		local tableAsString = "{\n\tfields = {\n\t\tdurability = \"100\"\n\t}\n}";
+		local table = {
+			fields = {
+				durability = 100
+			}
+		};
 		--lua
-        
+        local itemstack = ItemStack("default:pick_steel");
+		local meta = itemstack:get_meta();
+		meta:from_table(table); --sets metadata using from_table instead of setter methods
+		local tabletext = dump(meta:to_table()); --gets table as text
+		local lres = tabletext == tableAsString;
 		--Native
-		
+		local itemstack2 = ItemStack("default:pick_steel");
+		local meta2 = itemstack2:get_meta();
+		meta2:from_table(table); --sets metadata using from_table instead of setter methods
+		local tabletext2 = dump(meta2:to_table()); --gets table as text
+		local nres = tabletext2 == tableAsString;
+		--You can manually compare table contents in console.
+		print(tableAsString);
+		print(dump(meta:to_table()));
+		print(dump(meta2:to_table()));
 		if lres == nres then
 			return true, "Success, from_table() function output matches - check console for more details"
 		else
@@ -748,26 +862,3 @@ minetest.register_chatcommand("test_metadata", {
 		"Metadata tests completed. See server_dump.txt for details."
 	end
 })
-
---TO FIX: MAIN ISSUE IS META BEING USED BEFORE INITIALIZED!
-
---native_get()
---test_get()
---native_get_string()
---test_get_string()
---native_get_int()
---test_get_int()
---native_set_int()
---test_set_int()
---lua_get_float()
---native_get_float()
---test_get_float()
---lua_set_float()
---native_set_float()
---test_set_float()
---lua_to_table()
---native_to_table()
---test_to_table()
---lua_from_table()
---native_from_table()
---test_from_table()

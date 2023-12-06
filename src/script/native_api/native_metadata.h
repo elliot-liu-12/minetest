@@ -17,16 +17,16 @@ public: //TODO supposed to be protected instead
 	static int native_contains(Metadata* meta, std::string name);
 
 	// get(self, name)
-	static std::string native_get(Metadata *meta, std::string name, std::string str, MetaDataRef *ref);
+	static int native_get(Metadata *meta, std::string name, std::string &str);
 
 	// get_string(self, name)
-	static std::string native_get_string(Metadata *meta, std::string name, std::string str);
+	static int native_get_string(Metadata *meta, std::string name, std::string &str);
 
 	// set_string(self, name, var)
 	static int native_set_string(Metadata *meta, std::string name, std::string str, MetaDataRef *ref);
 
 	// get_int(self, name)
-	static std::string native_get_int(Metadata *meta, std::string name, MetaDataRef *ref);
+	static std::string native_get_int(Metadata *meta, std::string name, std::string &result);
 
 	// set_int(self, name, var)
 	static int native_set_int(Metadata *meta, std::string name, MetaDataRef *ref, int a);
