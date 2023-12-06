@@ -205,6 +205,7 @@ minetest.register_chatcommand("test_metadata_get_string", {
 		meta:set_string("description", "Custom description!");
 		inv:set_stack("main", 1, itemstack);
 		local desc = meta:get_string("description");
+		minetest.log("Lua: ");
 		minetest.log(desc);
 		local lres = (desc == "Custom description!");
 		--native
@@ -213,6 +214,7 @@ minetest.register_chatcommand("test_metadata_get_string", {
 		meta2:set_string("description", "Custom description!");
 		inv:set_stack("main", 2, itemstack2);
 		local desc2 = meta2:native_get_string("description");
+		minetest.log("Native: ");
 		minetest.log(desc2);
 		local nres = (desc2 == "Custom description!");
 		if lres == nres then
@@ -278,6 +280,7 @@ minetest.register_chatcommand("test_metadata_set_string", {
 		meta:set_string("description", "Custom description!");
 		inv:set_stack("main", 1, itemstack);
 		local desc = meta:get("description");
+		minetest.log("Lua: ");
 		minetest.log(desc);
 		local lres = (desc == "Custom description!");
 		--native
@@ -286,6 +289,7 @@ minetest.register_chatcommand("test_metadata_set_string", {
 		meta2:native_set_string("description", "Custom description!");
 		inv:set_stack("main", 2, itemstack2);
 		local desc2 = meta2:get("description");
+		minetest.log("Native: ");
 		minetest.log(desc2);
 		local nres = (desc2 == "Custom description!");
 		if lres == nres then
@@ -351,6 +355,7 @@ minetest.register_chatcommand("test_metadata_get_int", {
 		meta:set_int("hp", 100);
 		inv:set_stack("main", 1, itemstack);
 		local hp = meta:get_int("hp");
+		minetest.log("Lua: ");
 		minetest.log(hp);
 		local lres = (hp == 100);
 		--Native
@@ -359,6 +364,7 @@ minetest.register_chatcommand("test_metadata_get_int", {
 		meta2:set_int("hp", 100);
 		inv:set_stack("main", 2, itemstack2);
 		local hp2 = meta2:native_get_int("hp");
+		minetest.log("Native: ")
 		minetest.log(hp2);
 		local nres = (hp2 == 100);
 		if lres == nres then
@@ -424,6 +430,7 @@ minetest.register_chatcommand("test_metadata_set_int", {
 		meta:set_int("durability", 100);
 		inv:set_stack("main", 1, itemstack);
 		local durability = meta:get_int("durability");
+		minetest.log("Lua: ");
 		minetest.log(durability);
 		local lres = (durability == 100);
 		--Native
@@ -432,6 +439,7 @@ minetest.register_chatcommand("test_metadata_set_int", {
 		meta2:native_set_int("durability", 100);
 		inv:set_stack("main", 2, itemstack2);
 		local durability2 = meta2:get_int("durability");
+		minetest.log("Native: ");
 		minetest.log(durability2);
 		local nres = (durability2 == 100);
 		if lres == nres then
@@ -503,6 +511,7 @@ minetest.register_chatcommand("test_metadata_get_float", {
 		local hp = meta:get_float("hp");
 		local mult = 10^(1);
 		hp = math.floor(hp * mult + 0.5) / mult;
+		minetest.log("Lua: ");
 		minetest.log(hp);
 		local lres = (hp == 100.1);
 		--native
@@ -513,6 +522,7 @@ minetest.register_chatcommand("test_metadata_get_float", {
 		local hp2 = meta2:native_get_float("hp");
 		local mult2 = 10^(1);
 		hp2 = math.floor(hp2 * mult2 + 0.5) / mult2;
+		minetest.log("Native: ");
 		minetest.log(hp2);
 		local nres = (hp2 == 100.1);
 		if lres == nres then
@@ -584,6 +594,7 @@ minetest.register_chatcommand("test_metadata_set_float", {
 		local hp = meta:get_float("hp");
 		local mult = 10^(1);
 		hp = math.floor(hp * mult + 0.5) / mult;
+		minetest.log("Lua: ");
 		minetest.log(hp);
 		local lres = (hp == 100.1);
 		--Native
@@ -594,6 +605,7 @@ minetest.register_chatcommand("test_metadata_set_float", {
 		local hp2 = meta2:get_float("hp");
 		local mult2 = 10^(1);
 		hp2 = math.floor(hp2 * mult2 + 0.5) / mult2;
+		minetest.log("Native: ");
 		minetest.log(hp2);
 		local nres = (hp2 == 100.2);
 		if lres == nres then

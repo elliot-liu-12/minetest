@@ -1,15 +1,19 @@
 #include "native_metadata.h"
 
-int NativeMetaDataRef::native_contains(Metadata* meta, std::string name)
+int NativeMetaDataRef::native_contains(MetaDataRef *ref, std::string name)
 {
-	if (meta->contains(name)) {
-		return 1;
-	}
-	return 0;
+	Metadata *meta = ref->getmeta(false);
+	if (meta == NULL)
+		return -1;
+	return (int)meta->contains(name);
 }
 
-int NativeMetaDataRef::native_get(Metadata *meta, std::string name, std::string &str)
+int NativeMetaDataRef::native_get(MetaDataRef *ref, std::string name, std::string &str)
 {
+	Metadata *meta = ref->getmeta(false);
+	if (meta == NULL) {
+		return -1;
+	}
 	bool condition = meta->getStringToRef(name, str);
 	if (condition) {
 		return 1;
@@ -17,82 +21,86 @@ int NativeMetaDataRef::native_get(Metadata *meta, std::string name, std::string 
 	return 0;
 }
 
-int NativeMetaDataRef::native_get_string(Metadata *meta, std::string name, std::string &str)
+int NativeMetaDataRef::native_get_string(MetaDataRef *ref, std::string name, std::string &str)
 {
+	Metadata *meta = ref->getmeta(false);
+	if (meta == NULL) {
+		return -1;
+	}
 	str = meta->getString(name);
 	return 0;
 }
 
-int NativeMetaDataRef::native_set_string(Metadata *meta, std::string name, std::string str, MetaDataRef *ref)
+int NativeMetaDataRef::native_set_string(std::string name, size_t len, const char *s, MetaDataRef *ref)
 {
-	meta->setString(name, str);
-	ref->reportMetadataChange(&name);
-	return 0;
+	std::string str(s, len);
+	Metadata *meta = ref->getmeta(!str.empty());
+	if (meta == NULL || str == meta->getString(name)) {
+		return -1;
+	} else {
+		meta->setString(name, str);
+		ref->reportMetadataChange(&name);
+		return 0;
+	}
 }
 
-std::string NativeMetaDataRef::native_get_int(Metadata *meta, std::string name, std::string &result)
+std::string NativeMetaDataRef::native_get_int(MetaDataRef *ref, std::string name, std::string &result)
 {	
+	Metadata *meta = ref->getmeta(false);
 	result = "";
 	if (meta == NULL) {
 		return result;
 	}
-
 	result = meta->getString(name);
-
 	return result;
 }
 
-int NativeMetaDataRef::native_set_int(Metadata *meta, std::string name, MetaDataRef *ref, int a)
+int NativeMetaDataRef::native_set_int(std::string name, MetaDataRef *ref, int a)
 {
-	meta = ref->getmeta(true);
 	std::string str = itos(a);
-
+	Metadata *meta = ref->getmeta(true);
 	if (meta == NULL || str == meta->getString(name)) {
 		return -1;
 	}
-	
 	meta->setString(name, str);
 	ref->reportMetadataChange(&name);
-
 	return 0;
 }
 
-std::string NativeMetaDataRef::native_get_float(Metadata *meta, std::string name, MetaDataRef *ref)
+std::string NativeMetaDataRef::native_get_float(std::string name, MetaDataRef *ref)
 {
+	Metadata *meta = ref->getmeta(false); 
 	if (meta == NULL) {
 		return "";
 	}
-
 	const std::string &str = meta->getString(name);
-
 	return str;
 }
 
-int NativeMetaDataRef::native_set_float(Metadata *meta, std::string name, MetaDataRef *ref, float a)
+int NativeMetaDataRef::native_set_float(std::string name, MetaDataRef *ref, float a)
 {
 	std::string str = ftos(a);
-
+	Metadata *meta = ref->getmeta(true);
 	if (meta == NULL || str == meta->getString(name)) {
 		return 0;
 	}
-
 	meta->setString(name, str);
 	ref->reportMetadataChange(&name);
-
 	return 0;
 }
 
-int NativeMetaDataRef::native_to_table(Metadata *meta, MetaDataRef *ref)
+int NativeMetaDataRef::native_to_table(MetaDataRef *ref)
 {
+	Metadata *meta = ref->getmeta(true);
 	if (meta == NULL) {
 		return -1;
 	}
-
 	return 0;
 }
 
-int NativeMetaDataRef::native_from_table(Metadata *meta, MetaDataRef *ref)
+int NativeMetaDataRef::native_from_table(MetaDataRef *ref)
 {
+	Metadata *meta = ref->getmeta(true);
 	if (meta == NULL) {
 		return -1;
 	}
