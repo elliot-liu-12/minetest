@@ -70,4 +70,5 @@ public:
 
 	//TO-DO fully separate l_itemstackmeta from native counterpart.
 	friend class NativeItemStackMetaRef;
+	friend class NativeMetaDataRef;
 };

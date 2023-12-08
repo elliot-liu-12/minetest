@@ -78,4 +78,19 @@ protected:
 
 	// equals(self, other)
 	static int l_equals(lua_State *L);
+
+	//Native versions
+	static int l_native_contains(lua_State *L);
+	static int l_native_get(lua_State *L);
+	static int l_native_get_string(lua_State *L);
+	static int l_native_set_string(lua_State *L);
+	static int l_native_get_int(lua_State *L);
+	static int l_native_set_int(lua_State *L);
+	static int l_native_get_float(lua_State *L);
+	static int l_native_set_float(lua_State *L);
+	static int l_native_to_table(lua_State *L);
+	static int l_native_from_table(lua_State *L);
+	static int l_native_equals(lua_State *L);
+
+	friend class NativeMetaDataRef;
 };

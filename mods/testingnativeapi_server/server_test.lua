@@ -13,7 +13,8 @@ minetest.register_chatcommand("test_server_classes", {
 			"nodetimer",
 			"modchannels",
 			"settings",
-			"itemstackmeta"
+			"itemstackmeta",
+			"metadata"
 		}
 
 		native_tests.clear_file();
