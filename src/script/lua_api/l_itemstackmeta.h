@@ -54,6 +54,7 @@ private:
 
 	// Exported functions
 	static int l_set_tool_capabilities(lua_State *L);
+	static int l_native_set_tool_capabilities(lua_State *L);
 
 	// garbage collector
 	static int gc_object(lua_State *L);
@@ -66,4 +67,8 @@ public:
 	static void create(lua_State *L, ItemStack *istack);
 
 	static void Register(lua_State *L);
+
+	//TO-DO fully separate l_itemstackmeta from native counterpart.
+	friend class NativeItemStackMetaRef;
+	friend class NativeMetaDataRef;
 };

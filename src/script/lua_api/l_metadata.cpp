@@ -24,6 +24,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "serverenvironment.h"
 #include "map.h"
 #include "server.h"
+#include "native_api/native_metadata.h"
 
 // LUALIB_API
 void *luaL_checkudata_is_metadataref(lua_State *L, int ud) {
@@ -67,6 +68,21 @@ int MetaDataRef::l_contains(lua_State *L)
 	return 1;
 }
 
+int MetaDataRef::l_native_contains(lua_State *L)
+{
+	MAP_LOCK_REQUIRED;
+
+	MetaDataRef *ref = checkobject(L, 1);
+	std::string name = luaL_checkstring(L, 2);
+
+	int result = NativeMetaDataRef::native_contains(ref, name);
+	if (result != -1) {
+		lua_pushboolean(L, result);
+		return 1;
+	}
+	return 0;
+}
+
 // get(self, name)
 int MetaDataRef::l_get(lua_State *L)
 {
@@ -87,6 +103,25 @@ int MetaDataRef::l_get(lua_State *L)
 	return 0;
 }
 
+int MetaDataRef::l_native_get(lua_State *L)
+{
+	MAP_LOCK_REQUIRED;
+
+	MetaDataRef *ref = checkobject(L, 1);
+	std::string name = luaL_checkstring(L, 2);
+
+	std::string str;
+	int result = NativeMetaDataRef::native_get(ref, name, str);
+	if (result == -1) {
+		return 0;
+	} else if (result == 1) {
+		lua_pushlstring(L, str.c_str(), str.size());
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
 // get_string(self, name)
 int MetaDataRef::l_get_string(lua_State *L)
 {
@@ -103,6 +138,23 @@ int MetaDataRef::l_get_string(lua_State *L)
 
 	const std::string &str = meta->getString(name);
 	lua_pushlstring(L, str.c_str(), str.size());
+	return 1;
+}
+
+int MetaDataRef::l_native_get_string(lua_State *L)
+{
+	MAP_LOCK_REQUIRED;
+
+	MetaDataRef *ref = checkobject(L, 1);
+	std::string name = luaL_checkstring(L, 2);
+
+	std::string str;
+	int result = NativeMetaDataRef::native_get_string(ref, name, str);
+	if (result == -1) {
+		lua_pushlstring(L, "", 0);
+	} else {
+		lua_pushlstring(L, str.c_str(), str.size());
+	}
 	return 1;
 }
 
@@ -126,6 +178,19 @@ int MetaDataRef::l_set_string(lua_State *L)
 	return 0;
 }
 
+int MetaDataRef::l_native_set_string(lua_State *L)
+{
+	MAP_LOCK_REQUIRED;
+
+	MetaDataRef *ref = checkobject(L, 1);
+	std::string name = luaL_checkstring(L, 2);
+	size_t len = 0;
+	const char *s = lua_tolstring(L, 3, &len);
+
+	int result = NativeMetaDataRef::native_set_string(name, len, s, ref);
+	return 0;
+}
+
 // get_int(self, name)
 int MetaDataRef::l_get_int(lua_State *L)
 {
@@ -142,6 +207,24 @@ int MetaDataRef::l_get_int(lua_State *L)
 
 	const std::string &str = meta->getString(name);
 	lua_pushnumber(L, stoi(str));
+	return 1;
+}
+
+int MetaDataRef::l_native_get_int(lua_State *L)
+{
+	MAP_LOCK_REQUIRED;
+
+	MetaDataRef *ref = checkobject(L, 1);
+	std::string name = luaL_checkstring(L, 2);
+	
+	std::string result;
+	result = NativeMetaDataRef::native_get_int(ref, name, result);
+
+	if (result == "") {
+		lua_pushnumber(L, 0);
+		return 1;
+	}
+	lua_pushnumber(L, stoi(result));
 	return 1;
 }
 
@@ -164,6 +247,19 @@ int MetaDataRef::l_set_int(lua_State *L)
 	return 0;
 }
 
+int MetaDataRef::l_native_set_int(lua_State *L)
+{
+	MAP_LOCK_REQUIRED;
+
+	MetaDataRef *ref = checkobject(L, 1);
+	std::string name = luaL_checkstring(L, 2);
+	int a = luaL_checkint(L, 3);
+	
+	int result = NativeMetaDataRef::native_set_int(name, ref, a);
+
+	return 0;
+}
+
 // get_float(self, name)
 int MetaDataRef::l_get_float(lua_State *L)
 {
@@ -180,6 +276,24 @@ int MetaDataRef::l_get_float(lua_State *L)
 
 	const std::string &str = meta->getString(name);
 	lua_pushnumber(L, stof(str));
+	return 1;
+}
+
+int MetaDataRef::l_native_get_float(lua_State *L)
+{
+	MAP_LOCK_REQUIRED;
+
+	MetaDataRef *ref = checkobject(L, 1);
+	std::string name = luaL_checkstring(L, 2);
+
+	std::string result = NativeMetaDataRef::native_get_float(name, ref);
+
+	if (result == "") {
+		lua_pushnumber(L, 0);
+		return 1;
+	}
+
+	lua_pushnumber(L, stof(result));
 	return 1;
 }
 
@@ -202,6 +316,19 @@ int MetaDataRef::l_set_float(lua_State *L)
 	return 0;
 }
 
+int MetaDataRef::l_native_set_float(lua_State *L)
+{
+	MAP_LOCK_REQUIRED;
+
+	MetaDataRef *ref = checkobject(L, 1);
+	std::string name = luaL_checkstring(L, 2);
+	float a = readParam<float>(L, 3);
+
+	int result = NativeMetaDataRef::native_set_float(name, ref, a);
+
+	return 0;
+}
+
 // to_table(self)
 int MetaDataRef::l_to_table(lua_State *L)
 {
@@ -218,6 +345,23 @@ int MetaDataRef::l_to_table(lua_State *L)
 
 	ref->handleToTable(L, meta);
 
+	return 1;
+}
+
+int MetaDataRef::l_native_to_table(lua_State *L)
+{
+	MAP_LOCK_REQUIRED;
+
+	MetaDataRef *ref = checkobject(L, 1);
+	int result = NativeMetaDataRef::native_to_table(ref);
+
+	if (result == -1) {
+		lua_pushnil(L);
+		return 1;
+	}
+	lua_newtable(L);
+
+	ref->handleToTable(L, ref->getmeta(true));
 	return 1;
 }
 
@@ -245,6 +389,35 @@ int MetaDataRef::l_from_table(lua_State *L)
 	}
 
 	bool was_successful = ref->handleFromTable(L, base, meta);
+	ref->reportMetadataChange();
+	lua_pushboolean(L, was_successful);
+	return 1;
+}
+
+int MetaDataRef::l_native_from_table(lua_State *L)
+{
+	MAP_LOCK_REQUIRED;
+
+	MetaDataRef *ref = checkobject(L, 1);
+	int base = 2;
+
+	ref->clearMeta();
+
+	if (!lua_istable(L, base)) {
+		// No metadata
+		lua_pushboolean(L, true);
+		return 1;
+	}
+
+	// Create new metadata
+	int result = NativeMetaDataRef::native_from_table(ref);
+
+	if (result == -1) {
+		lua_pushboolean(L, false);
+		return 1;
+	}
+
+	bool was_successful = ref->handleFromTable(L, base, ref->getmeta(true));
 	ref->reportMetadataChange();
 	lua_pushboolean(L, was_successful);
 	return 1;
@@ -298,5 +471,20 @@ int MetaDataRef::l_equals(lua_State *L)
 		lua_pushboolean(L, data1 == data2);
 	else
 		lua_pushboolean(L, *data1 == *data2);
+	return 1;
+}
+
+int MetaDataRef::l_native_equals(lua_State *L)
+{
+	MetaDataRef *ref1 = checkobject(L, 1);
+	MetaDataRef *ref2 = checkobject(L, 2);
+	int result = NativeMetaDataRef::native_equals(ref1, ref2);
+
+	if (result == -1) {
+		lua_pushboolean(L, ref1->getmeta(false) == ref2->getmeta(false));
+	} else {
+		lua_pushboolean(L, *ref1->getmeta(false) == *ref2->getmeta(false));
+	}
+	
 	return 1;
 }

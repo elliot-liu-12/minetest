@@ -1,3 +1,78 @@
+<img src="https://avatars.slack-edge.com/2016-09-30/86179276007_046bf7b1d422948da1b3_88.png" alt="Centered Image">
+
+Cacti Council
+========
+## Members
+- Dr. Jeremiah Blanchard - Shareholder/Project Lead
+- Aaron Leopard - Developer
+- Alice Sun - Developer
+- Allison Wu - Developer
+- Anthony Davila - Developer
+- Carlos Echenique - Developer
+- Colin Rocks - Developer
+- Erik Almeida - Developer
+- Joshua Chan - Developer
+- Lisa Touchton - Developer
+- Logan Rotenberger - Developer
+- Nathan Whelden - Developer
+- Sean Ferguson - Developer
+- Songyuhao Shi - Developer
+- Zarya Rojo - Developer
+
+## Our Purpose
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Minecraft's adaptability, cost-effectiveness, and engaging gameplay have garnered interest from various individuals, leading to its application in educational settings. Minetest, an open-source counterpart to Minecraft, plays a significant role in helping individuals develop coding skills. As a sandbox game, Minetest offers a dynamic and interactive environment that enhances students' creativity, problem-solving, and collaboration skills. The game provides a customizable platform, enabling educators to design and tailor educational content such as the customization of facilities, land, and environment. This platform also addresses specific learning objectives and individual students' needs. The flexibility of Minetest is particularly advantageous when incorporating it into a wide range of STEM field subjects. Its open-source nature ensures free access for all schools, eliminating financial barriers that might exist with commercial alternatives. By integrating Minetest into the classroom, educators can offer a dynamic, immersive learning experience that promotes self-directed exploration, critical thinking, and real-world applications of subject matter [1]. Consequently, teachers can effectively bridge the gap between traditional teaching methods and the rapidly evolving world of digital technologies, better-preparing students for the challenges and opportunities they will encounter in the 21st century.
+\
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Minetest will play a significant role when it's incorporated into an educational setting. Also, the proven results illustrate that Minetest fosters creativity, problem-solving, and collaboration among students. Nevertheless, a significant challenge arises for both educators and students on the games’ dependence on Lua scripts which may lead to unfamiliarity for students to code and edit since the Lua script is ranked 30th in coding languages [2]. To tackle this issue, the Minetest team is working on recreating the Lua game engine in C++. Our Design 2 team is currently focused on salvaging as much C++ code as possible, so when the team starts coding the game engine, less time will be spent on redeveloping code. As we know, C++ is a widely acknowledged programming language, iterating and modifying the game with new C++ files not only streamlines the learning process for students but also broadens the accessibility of Minetest as an educational tool. By bridging the gap between Lua and C++, our team ensures that students can effectively engage with Minetest's educational content without the necessity to invest time in learning Lua scripting and potentially being able to code in their language of choice. This improvement will ultimately enhance the overall learning experience and empower students to concentrate on critical thinking, problem-solving, and collaboration skills essential for success in the classroom.
+
+
+## Important Links for Our Project
+
+
+## Helpful Links for Minetest Resources
+Server-side API: https://minetest.gitlab.io/minetest/class-reference/
+\
+Client-side API: https://github.com/minetest/minetest/blob/master/doc/client_lua_api.md
+\
+\
+Mod Book: https://minetest.org/modbook/
+\
+Minetest Wiki: https://minetest.gitlab.io/minetest/class-reference/
+\
+\
+Programming in Lua: https://www.lua.org/pil/contents.html#P4
+\
+C++ Reference: https://en.cppreference.com/w/cpp
+\
+GIT Tutorial: https://git-scm.com/docs/gittutorial
+\
+\
+Modding Guide https://github.com/cacticouncil/minetest/blob/master/doc/modding_guide.md
+
+## FAQ
+Q: What IDE should I use for Minetest?
+\
+Visual Studio 2015 to 2022.
+\
+\
+Q: How long does setup take?
+\
+About 30 mins (if everything goes right)
+\
+\
+Q: There are red errors/libraries missing in CMake. Is that a concern?
+\
+As long as you can configure then generate without missing any libraries critical for Minetest, you should be fine.
+\
+\
+Q: What is the team workflow on Github?
+\
+Make your own branch, then make a pull request to merge your branch into Native-Api. Have another teammate review your PR.
+\
+
+## Citations
+[1] Noelene Callaghan (2016) Investigating the role of Minecraft in educational learning environments, Educational Media International, 53:4, 244-260, DOI: 10.1080/09523987.2016.1254877  
+[2] Tiobe index. TIOBE. (2022, June 3). Retrieved April 25, 2023, from https://www.tiobe.com/tiobe-index/
+
 Minetest
 ========
 
