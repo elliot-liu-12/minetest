@@ -40,18 +40,23 @@ private:
 	// The one-argument version logs to LL_NONE.
 	// The two-argument version accepts a log level.
 	static int l_log(lua_State *L);
+	static int l_native_log(lua_State *L);
 
 	// get us precision time
 	static int l_get_us_time(lua_State *L);
+	static int l_native_get_us_time(lua_State *L);
 
 	// parse_json(str[, nullvalue])
 	static int l_parse_json(lua_State *L);
+	static int l_native_parse_json(lua_State *L);
 
 	// write_json(data[, styled])
 	static int l_write_json(lua_State *L);
+	static int l_native_write_json(lua_State *L);
 
 	// get_dig_params(groups, tool_capabilities[, time_from_last_punch])
 	static int l_get_dig_params(lua_State *L);
+	static int l_native_get_dig_params(lua_State *L);
 
 	// get_hit_params(groups, tool_capabilities[, time_from_last_punch])
 	static int l_get_hit_params(lua_State *L);

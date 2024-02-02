@@ -41,6 +41,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "util/sha1.h"
 #include <algorithm>
 
+#include "../native_api/native_util.h"
+
 
 // log([level,] text)
 // Writes a line to the logger.
@@ -73,11 +75,39 @@ int ModApiUtil::l_log(lua_State *L)
 	return 0;
 }
 
+int ModApiUtil::l_native_log(lua_State* L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	std::string text;
+	LogLevel level = LL_NONE;
+	if (lua_isnone(L, 2)) {
+		text = luaL_checkstring(L, 1);
+	} else {
+		std::string name = luaL_checkstring(L, 1);
+		text = luaL_checkstring(L, 2);
+		if (name == "deprecated") {
+			log_deprecated(L, text, 2);
+			return 0;
+		}
+
+		level = nativeModApiUtil::n_util_log(name);
+	}
+	g_logger.log(level, text);
+	return 0;
+}
+
 // get_us_time()
 int ModApiUtil::l_get_us_time(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
 	lua_pushnumber(L, porting::getTimeUs());
+	return 1;
+}
+
+int ModApiUtil::l_native_get_us_time(lua_State* L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	lua_pushnumber(L, nativeModApiUtil::n_util_get_us_time());
 	return 1;
 }
 
@@ -128,6 +158,38 @@ int ModApiUtil::l_parse_json(lua_State *L)
 	return 1;
 }
 
+int ModApiUtil::l_native_parse_json(lua_State* L)
+{
+	NO_MAP_LOCK_REQUIRED;
+
+	const char *jsonstr = luaL_checkstring(L, 1);
+
+	int nullindex = 2;
+	if (lua_isnone(L, nullindex)) {
+		lua_pushnil(L);
+		nullindex = lua_gettop(L);
+	}
+
+	Json::Value root;
+
+	{
+		int res = nativeModApiUtil::n_util_parse_json(jsonstr, root);
+		if (res == 1)
+		{
+			lua_pushnil(L);
+			return 1;
+		}
+	}
+
+	if (!push_json_value(L, root, nullindex)) {
+		errorstream << "Failed to parse json data, "
+			    << "depth exceeds lua stack limit" << std::endl;
+		errorstream << "data: \"" << jsonstr << "\"" << std::endl;
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
 // write_json(data[, styled]) -> string or nil and error message
 int ModApiUtil::l_write_json(lua_State *L)
 {
@@ -158,6 +220,31 @@ int ModApiUtil::l_write_json(lua_State *L)
 	return 1;
 }
 
+int ModApiUtil::l_native_write_json(lua_State* L)
+{
+	NO_MAP_LOCK_REQUIRED;
+
+	bool styled = false;
+	if (!lua_isnone(L, 2)) {
+		styled = readParam<bool>(L, 2);
+		lua_pop(L, 1);
+	}
+
+	Json::Value root;
+	try {
+		read_json_value(L, root, 1);
+	} catch (SerializationError &e) {
+		lua_pushnil(L);
+		lua_pushstring(L, e.what());
+		return 2;
+	}
+
+	std::string out = nativeModApiUtil::n_util_write_json(styled, root);
+
+	lua_pushlstring(L, out.c_str(), out.size());
+	return 1;
+}
+
 // get_dig_params(groups, tool_capabilities)
 int ModApiUtil::l_get_dig_params(lua_State *L)
 {
@@ -166,6 +253,16 @@ int ModApiUtil::l_get_dig_params(lua_State *L)
 	read_groups(L, 1, groups);
 	ToolCapabilities tp = read_tool_capabilities(L, 2);
 	push_dig_params(L, getDigParams(groups, &tp));
+	return 1;
+}
+
+int ModApiUtil::l_native_get_dig_params(lua_State* L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	ItemGroupList groups;
+	read_groups(L, 1, groups);
+	ToolCapabilities tp = read_tool_capabilities(L, 2);
+	push_dig_params(L, nativeModApiUtil::n_util_get_dig_params(groups, tp));
 	return 1;
 }
 
