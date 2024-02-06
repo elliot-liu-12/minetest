@@ -29,6 +29,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "server.h"
 #include "mapgen/mapgen.h"
 #include "voxelalgorithms.h"
+#include "../native_api/native_vmanip.h"
 
 // garbage collector
 int LuaVoxelManip::gc_object(lua_State *L)
@@ -58,6 +59,10 @@ int LuaVoxelManip::l_read_from_map(lua_State *L)
 	return 2;
 }
 
+int LuaVoxelManip::l_native_read_from_map(lua_State *L) {
+	return 0;
+}
+
 int LuaVoxelManip::l_get_data(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
@@ -83,6 +88,10 @@ int LuaVoxelManip::l_get_data(lua_State *L)
 	return 1;
 }
 
+int LuaVoxelManip::l_native_get_data(lua_State *L) {
+	return 0;
+}
+
 int LuaVoxelManip::l_set_data(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
@@ -103,6 +112,10 @@ int LuaVoxelManip::l_set_data(lua_State *L)
 		lua_pop(L, 1);
 	}
 
+	return 0;
+}
+
+int LuaVoxelManip::l_native_set_data(lua_State *L) {
 	return 0;
 }
 
@@ -132,6 +145,10 @@ int LuaVoxelManip::l_write_to_map(lua_State *L)
 	return 0;
 }
 
+int LuaVoxelManip::l_native_write_to_map(lua_State *L) {
+	return 0;
+}
+
 int LuaVoxelManip::l_get_node_at(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
@@ -143,6 +160,10 @@ int LuaVoxelManip::l_get_node_at(lua_State *L)
 
 	pushnode(L, o->vm->getNodeNoExNoEmerge(pos), ndef);
 	return 1;
+}
+
+int LuaVoxelManip::l_native_get_node_at(lua_State *L) {
+	return 0;
 }
 
 int LuaVoxelManip::l_set_node_at(lua_State *L)
@@ -157,6 +178,10 @@ int LuaVoxelManip::l_set_node_at(lua_State *L)
 
 	o->vm->setNodeNoEmerge(pos, n);
 
+	return 0;
+}
+
+int LuaVoxelManip::l_native_set_node_at(lua_State *L) {
 	return 0;
 }
 
@@ -177,6 +202,10 @@ int LuaVoxelManip::l_update_liquids(lua_State *L)
 	mg.updateLiquid(&map->m_transforming_liquid,
 			vm->m_area.MinEdge, vm->m_area.MaxEdge);
 
+	return 0;
+}
+
+int LuaVoxelManip::l_native_update_liquids(lua_State *L) {
 	return 0;
 }
 
@@ -216,6 +245,10 @@ int LuaVoxelManip::l_calc_lighting(lua_State *L)
 	return 0;
 }
 
+int LuaVoxelManip::l_native_calc_lighting(lua_State *L) {
+	return 0;
+}
+
 int LuaVoxelManip::l_set_lighting(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
@@ -252,6 +285,10 @@ int LuaVoxelManip::l_set_lighting(lua_State *L)
 	return 0;
 }
 
+int LuaVoxelManip::l_native_set_lighting(lua_State *L) {
+	return 0;
+}
+
 int LuaVoxelManip::l_get_light_data(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
@@ -269,6 +306,10 @@ int LuaVoxelManip::l_get_light_data(lua_State *L)
 	}
 
 	return 1;
+}
+
+int LuaVoxelManip::l_native_get_light_data(lua_State *L) {
+	return 0;
 }
 
 int LuaVoxelManip::l_set_light_data(lua_State *L)
@@ -292,6 +333,10 @@ int LuaVoxelManip::l_set_light_data(lua_State *L)
 		lua_pop(L, 1);
 	}
 
+	return 0;
+}
+
+int LuaVoxelManip::l_native_set_light_data(lua_State *L) {
 	return 0;
 }
 
@@ -320,6 +365,10 @@ int LuaVoxelManip::l_get_param2_data(lua_State *L)
 	return 1;
 }
 
+int LuaVoxelManip::l_native_get_param2_data(lua_State *L) {
+	return 0;
+}
+
 int LuaVoxelManip::l_set_param2_data(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
@@ -344,9 +393,18 @@ int LuaVoxelManip::l_set_param2_data(lua_State *L)
 	return 0;
 }
 
+int LuaVoxelManip::l_native_set_param2_data(lua_State *L) {
+	return 0;
+}
+
+
 int LuaVoxelManip::l_update_map(lua_State *L)
 {
 	return 0;
+}
+
+int LuaVoxelManip::l_native_update_map(lua_State *L) {
+	return NativeLuaVoxelManip::native_update_map();
 }
 
 int LuaVoxelManip::l_was_modified(lua_State *L)
@@ -361,6 +419,10 @@ int LuaVoxelManip::l_was_modified(lua_State *L)
 	return 1;
 }
 
+int LuaVoxelManip::l_native_was_modified(lua_State *L) {
+	return 0;
+}
+
 int LuaVoxelManip::l_get_emerged_area(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
@@ -371,6 +433,10 @@ int LuaVoxelManip::l_get_emerged_area(lua_State *L)
 	push_v3s16(L, o->vm->m_area.MaxEdge);
 
 	return 2;
+}
+
+int LuaVoxelManip::l_native_get_emerged_area(lua_State *L) {
+	return 0;
 }
 
 LuaVoxelManip::LuaVoxelManip(MMVManip *mmvm, bool is_mg_vm) :
@@ -475,5 +541,21 @@ const luaL_Reg LuaVoxelManip::methods[] = {
 	luamethod(LuaVoxelManip, set_param2_data),
 	luamethod(LuaVoxelManip, was_modified),
 	luamethod(LuaVoxelManip, get_emerged_area),
+	luamethod(LuaVoxelManip, native_read_from_map),
+	luamethod(LuaVoxelManip, native_get_data),
+	luamethod(LuaVoxelManip, native_set_data),
+	luamethod(LuaVoxelManip, native_get_node_at),
+	luamethod(LuaVoxelManip, native_set_node_at),
+	luamethod(LuaVoxelManip, native_write_to_map),
+	luamethod(LuaVoxelManip, native_update_map),
+	luamethod(LuaVoxelManip, native_update_liquids),
+	luamethod(LuaVoxelManip, native_calc_lighting),
+	luamethod(LuaVoxelManip, native_set_lighting),
+	luamethod(LuaVoxelManip, native_get_light_data),
+	luamethod(LuaVoxelManip, native_set_light_data),
+	luamethod(LuaVoxelManip, native_get_param2_data),
+	luamethod(LuaVoxelManip, native_set_param2_data),
+	luamethod(LuaVoxelManip, native_was_modified),
+	luamethod(LuaVoxelManip, native_get_emerged_area),
 	{0,0}
 };
