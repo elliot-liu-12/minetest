@@ -295,7 +295,7 @@ int LuaVoxelManip::l_native_update_liquids(lua_State *L)
 	Map *map = &(env->getMap());
 	Mapgen mg;
 	
-	NativeLuaVoxelManip::native_update_liquids(o, ndef, map, mg);
+	NativeLuaVoxelManip::native_update_liquids(o, ndef, map, &mg);
 
 	return 0;
 }

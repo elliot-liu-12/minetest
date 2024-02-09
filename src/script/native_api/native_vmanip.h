@@ -22,7 +22,7 @@ private:
 	static int native_set_node_at(LuaVoxelManip *o, v3s16 pos, MapNode n);
 
 	static int native_update_map();
-	static int native_update_liquids(LuaVoxelManip *o, NodeDefManager *ndef, Map *map, Mapgen mg);
+	static int native_update_liquids(LuaVoxelManip *o, const NodeDefManager *ndef, Map *map, Mapgen *mg);
 
 	static v3s16 native_calc_lighting(LuaVoxelManip *o, std::string x, v3s16 pmin, v3s16 pmax, Mapgen *mg, bool propagate_shadow);
 	static int native_set_lighting(LuaVoxelManip *o, v3s16 pmin, v3s16 pmax, Mapgen *mg);

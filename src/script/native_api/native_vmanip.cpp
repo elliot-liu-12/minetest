@@ -87,7 +87,7 @@ int NativeLuaVoxelManip::native_update_map()
 	return 0;
 }
 
-int NativeLuaVoxelManip::native_update_liquids(LuaVoxelManip *o, NodeDefManager *ndef, Map *map, Mapgen mg)
+int NativeLuaVoxelManip::native_update_liquids(LuaVoxelManip *o, const NodeDefManager *ndef, Map *map, Mapgen *mg)
 {
 	MMVManip *vm = o->vm;
 
