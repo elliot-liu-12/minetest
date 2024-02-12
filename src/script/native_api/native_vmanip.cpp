@@ -1,22 +1,11 @@
 //Native version of vmanip class.
 //Erik Companhone.
 
-#include "lua_api/l_vmanip.h"
-#include "lua_api/l_internal.h"
-#include "common/c_content.h"
-#include "common/c_converter.h"
-#include "emerge.h"
-#include "environment.h"
-#include "map.h"
-#include "mapblock.h"
-#include "server.h"
-#include "../../mapgen/mapgen.h"
-#include "voxelalgorithms.h"
 #include "native_vmanip.h"
 
-MMVManip* NativeLuaVoxelManip::native_read_from_map(v3s16 a, v3s16 b, LuaVoxelManip *o)
+MMVManip* NativeLuaVoxelManip::native_read_from_map(v3s16 a, v3s16 b, MMVManip *vm)
 {
-	MMVManip *vm = o->vm;
+	//MMVManip *vm = o->vm;
 	
 	v3s16 bp1 = getNodeBlockPos(a);
 	v3s16 bp2 = getNodeBlockPos(b);
@@ -24,8 +13,9 @@ MMVManip* NativeLuaVoxelManip::native_read_from_map(v3s16 a, v3s16 b, LuaVoxelMa
 
 	vm->initialEmerge(bp1, bp2);
 
-	return *vm;
+	return vm;
 }
+
 
 u32 NativeLuaVoxelManip::native_get_data(LuaVoxelManip *o)
 {
@@ -48,7 +38,7 @@ u32 NativeLuaVoxelManip::native_set_data(LuaVoxelManip *o, u32 i, content_t c)
 	return volume;
 }
 
-int NativeLuaVoxelManip::native_write_to_map(LuaVoxelManip *o, bool update_light)
+int NativeLuaVoxelManip::native_write_to_map(LuaVoxelManip *o, bool update_light, ServerEnvironment *env)
 {
 	ServerMap *map = &(env->getServerMap());
 	if (o->is_mapgen_vm || !update_light) {
@@ -71,7 +61,7 @@ int NativeLuaVoxelManip::native_write_to_map(LuaVoxelManip *o, bool update_light
 	return 0;
 }
 
-MapNode NativeLuaVoxelManip::native_get_node_at(LuaVoxelManip *o)
+MapNode NativeLuaVoxelManip::native_get_node_at(LuaVoxelManip *o, v3s16 pos)
 {
 	return o->vm->getNodeNoExNoEmerge(pos);
 }
@@ -91,9 +81,9 @@ int NativeLuaVoxelManip::native_update_liquids(LuaVoxelManip *o, const NodeDefMa
 {
 	MMVManip *vm = o->vm;
 
-	mg.vm = vm;
-	mg.ndef = ndef;
-	mg.updateLiquid(&map->m_transforming_liquid,
+	mg->vm = vm;
+	mg->ndef = ndef;
+	mg->updateLiquid(&map->m_transforming_liquid,
 		vm->m_area.MinEdge, vm->m_area.MaxEdge);
 
 	return 0;
@@ -105,7 +95,7 @@ v3s16 NativeLuaVoxelManip::native_calc_lighting(LuaVoxelManip *o, std::string x,
 		if (!o->is_mapgen_vm) {
 			warningstream << "VoxelManip:calc_lighting called for a non-mapgen "
 				"VoxelManip object" << std::endl;
-			return 0;
+			return v3s16(0, 0, 0);
 		}
 
 		if (x == "fpmin") {
@@ -117,17 +107,17 @@ v3s16 NativeLuaVoxelManip::native_calc_lighting(LuaVoxelManip *o, std::string x,
 	}
 	else {
 		if (mg->vm == o->vm) {
-			mg.calcLighting(pmin, pmax, o->vm->m_area.MinEdge, o->vm->m_area.MaxEdge, propagate_shadow);
+			mg->calcLighting(pmin, pmax, o->vm->m_area.MinEdge, o->vm->m_area.MaxEdge, propagate_shadow);
 		}
 		else {
 			sortBoxVerticies(pmin, pmax);
 		}
 	}
 		
-	return 0;
+	return v3s16(0, 0, 0);
 }
 
-int NativeLuaVoxelManip::native_set_lighting(LuaVoxelManip *o, v3s16 pmin, v3s16 pmax, Mapgen *mg)
+int NativeLuaVoxelManip::native_set_lighting(LuaVoxelManip *o, v3s16 pmin, v3s16 pmax, Mapgen *mg, u8 light)
 {
 	if (!o->is_mapgen_vm) {
 		warningstream << "VoxelManip:set_lighting called for a non-mapgen "
@@ -140,7 +130,7 @@ int NativeLuaVoxelManip::native_set_lighting(LuaVoxelManip *o, v3s16 pmin, v3s16
 			sortBoxVerticies(pmin, pmax);
 		}
 		else {
-			mg.setLighting(light, pmin, pmax);
+			mg->setLighting(light, pmin, pmax);
 		}
 	}
 	
@@ -169,7 +159,7 @@ u32 NativeLuaVoxelManip::native_get_param2_data(LuaVoxelManip *o, u32 i)
 		return o->vm->m_area.getVolume();
 	}
 	
-	return vm->m_data[i].param2;
+	return o->vm->m_data[i].param2;
 }
 
 u32 NativeLuaVoxelManip::native_set_param2_data(LuaVoxelManip *o, u32 i, u8 param2)

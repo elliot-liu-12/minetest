@@ -22,6 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <map>
 #include "irr_v3d.h"
 #include "lua_api/l_base.h"
+#include "native_api/native_vmanip.h"
 
 class Map;
 class MapBlock;
@@ -85,7 +86,7 @@ private:
 
 	static int l_native_was_modified(lua_State *L);
 	static int l_native_get_emerged_area(lua_State *L);
-
+	
 public:
 	MMVManip *vm = nullptr;
 

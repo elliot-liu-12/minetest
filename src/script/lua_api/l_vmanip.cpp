@@ -68,7 +68,7 @@ int LuaVoxelManip::l_native_read_from_map(lua_State *L)
 	v3s16 a = check_v3s16(L, 2);
 	v3s16 b = check_v3s16(L, 3);
 
-	MMVManip *vm = NativeLuaVoxelManip::native_read_from_map(a, b, o);
+	MMVManip *vm = NativeLuaVoxelManip::native_read_from_map(a, b, o->vm);
 
 	push_v3s16(L, vm->m_area.MinEdge);
 	push_v3s16(L, vm->m_area.MaxEdge);
@@ -203,7 +203,7 @@ int LuaVoxelManip::l_native_write_to_map(lua_State *L)
 	bool update_light = !lua_isboolean(L, 2) || readParam<bool>(L, 2);
 	GET_ENV_PTR;
 
-	NativeLuaVoxelManip::native_write_to_map(o, update_light);
+	NativeLuaVoxelManip::native_write_to_map(o, update_light, env);
 
 	return 0;
 }
@@ -230,7 +230,7 @@ int LuaVoxelManip::l_native_get_node_at(lua_State *L)
 	LuaVoxelManip *o = checkobject(L, 1);
 	v3s16 pos = check_v3s16(L, 2);
 
-	pushnode(L, NativeLuaVoxelManip::native_get_node_at(o), ndef);
+	pushnode(L, NativeLuaVoxelManip::native_get_node_at(o, pos), ndef);
 	return 1;
 }
 
@@ -417,14 +417,15 @@ int LuaVoxelManip::l_native_set_lighting(lua_State *L)
 	LuaVoxelManip *o = checkobject(L, 1);
 	v3s16 pmin = v3s16(INT_MIN, INT_MIN, INT_MIN);
 	v3s16 pmax = v3s16(INT_MIN, INT_MIN, INT_MIN);
-	Mapgen mg;
+	Mapgen *mg = nullptr;
+	u8 light;
 
-	NativeLuaVoxelManip::native_set_lighting(o, pmin, pmax, &mg);
+	NativeLuaVoxelManip::native_set_lighting(o, pmin, pmax, mg, light);
 	
 	if (!lua_istable(L, 2))
 		throw LuaError("VoxelManip:set_lighting called with missing parameter");
 
-	u8 light;
+	
 	light = (getintfield_default(L, 2, "day", 0) & 0x0F);
 	light |= (getintfield_default(L, 2, "night", 0) & 0x0F) << 4;
 
@@ -433,12 +434,12 @@ int LuaVoxelManip::l_native_set_lighting(lua_State *L)
 	pmin = lua_istable(L, 3) ? check_v3s16(L, 3) : vm->m_area.MinEdge + (v3s16(0, 1, 0) * MAP_BLOCKSIZE);
 	pmax = lua_istable(L, 4) ? check_v3s16(L, 4) : vm->m_area.MaxEdge - (v3s16(0, 1, 0) * MAP_BLOCKSIZE);
 
-	NativeLuaVoxelManip::native_set_lighting(o, pmin, pmax, &mg);
+	NativeLuaVoxelManip::native_set_lighting(o, pmin, pmax, mg, light);
 	if (!vm->m_area.contains(VoxelArea(pmin, pmax)))
 		throw LuaError("Specified voxel area out of VoxelManipulator bounds");
 
-	mg.vm = vm;
-	NativeLuaVoxelManip::native_set_lighting(o, pmin, pmax, &mg);
+	mg->vm = vm;
+	NativeLuaVoxelManip::native_set_lighting(o, pmin, pmax, mg, light);
 
 	return 0;
 }
@@ -516,7 +517,7 @@ int LuaVoxelManip::l_native_set_light_data(lua_State *L)
 		throw LuaError("VoxelManip:set_light_data called with missing "
 			"parameter");
 
-	u8 light;
+	u8 light = INT_MIN;
 	u32 volume = NativeLuaVoxelManip::native_set_light_data(o, -1, light);
 	
 	for (u32 i = 0; i != volume; i++) {
@@ -615,7 +616,7 @@ int LuaVoxelManip::l_native_set_param2_data(lua_State *L)
 		throw LuaError("VoxelManip:set_param2_data called with missing "
 			"parameter");
 
-	u8 param2;
+	u8 param2 = INT_MIN;
 	u32 volume = NativeLuaVoxelManip::native_set_param2_data(o, -1, param2);
 	for (u32 i = 0; i != volume; i++) {
 		lua_rawgeti(L, 2, i + 1);
@@ -628,7 +629,6 @@ int LuaVoxelManip::l_native_set_param2_data(lua_State *L)
 
 	return 0;
 }
-
 
 int LuaVoxelManip::l_update_map(lua_State *L)
 {

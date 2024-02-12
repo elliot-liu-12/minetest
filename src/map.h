@@ -275,6 +275,7 @@ public:
 	bool isBlockOccluded(MapBlock *block, v3s16 cam_pos_nodes);
 protected:
 	friend class LuaVoxelManip;
+	friend class NativeLuaVoxelManip;
 
 	IGameDef *m_gamedef;
 
