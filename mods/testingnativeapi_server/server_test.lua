@@ -14,7 +14,8 @@ minetest.register_chatcommand("test_server_classes", {
 			"modchannels",
 			"settings",
 			"itemstackmeta",
-			"metadata"
+			"metadata",
+			"vmanip"
 		}
 
 		native_tests.clear_file();

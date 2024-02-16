@@ -21,6 +21,7 @@ dofile(modpath .. "/nodetimer.lua")
 dofile(modpath .. "/modchannels.lua")
 dofile(modpath .. "/itemstackmeta.lua")
 dofile(modpath .. "/metadata.lua")
+dofile(modpath .. "/vmanip.lua")
 
 -- Load helper files
 dofile(modpath .. "/other.lua")
