@@ -305,9 +305,9 @@ minetest.register_chatcommand("native_vmanip_set_data", {
 		local res = equals(voxelManip:get_data(), data);
         
         if res then 
-            return true, "Success, set_data() changed data."
+            return true, "Success, native_set_data() changed data."
         else
-            return false, "Failure, set_data() did not change data."
+            return false, "Failure, native_set_data() did not change data."
         end
     end
 })
@@ -1422,6 +1422,3 @@ minetest.register_chatcommand("test_vmanip", {
 --"set_param2_data",
 --"was_modified",
 --"get_emerged_area"
-
---TO FIX:
---NATIVE_SET_DATA
