@@ -86,7 +86,6 @@ int NodeMetaRef::gc_object(lua_State *L) {
 int NodeMetaRef::l_get_inventory(lua_State *L)
 {
 	MAP_LOCK_REQUIRED;
-
 	NodeMetaRef *ref = checkobject(L, 1);
 	ref->getmeta(true);  // try to ensure the metadata exists
 	InvRef::createNodeMeta(L, ref->m_p);

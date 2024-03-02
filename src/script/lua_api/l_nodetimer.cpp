@@ -53,6 +53,7 @@ int NodeTimerRef::l_start(lua_State *L)
 	MAP_LOCK_REQUIRED;
 	NodeTimerRef *o = checkobject(L, 1);
 	f32 t = readParam<float>(L,2);
+	std::cout << "made it here";
 	o->m_map->setNodeTimer(NodeTimer(t, 0, o->m_p));
 	return 0;
 }
