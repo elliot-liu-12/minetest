@@ -280,6 +280,22 @@ int ModApiUtil::l_get_hit_params(lua_State *L)
 	return 1;
 }
 
+int ModApiUtil::l_native_get_hit_params(lua_State* L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	std::unordered_map<std::string, int> groups;
+	read_groups(L, 1, groups);
+	ToolCapabilities tp = read_tool_capabilities(L, 2);
+
+	float time_from_last_punch = NULL;
+	if (!lua_isnoneornil(L, 3))
+		time_from_last_punch = readParam<float>(L, 3);
+
+	push_hit_params(L, nativeModApiUtil::n_util_get_hit_params(groups, tp, time_from_last_punch));
+
+	return 1;
+}
+
 // check_password_entry(name, entry, password)
 int ModApiUtil::l_check_password_entry(lua_State *L)
 {
@@ -309,6 +325,17 @@ int ModApiUtil::l_check_password_entry(lua_State *L)
 	return 1;
 }
 
+int ModApiUtil::l_native_check_password_entry(lua_State* L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	std::string name = luaL_checkstring(L, 1);
+	std::string entry = luaL_checkstring(L, 2);
+	std::string password = luaL_checkstring(L, 3);
+
+	lua_pushboolean(L, nativeModApiUtil::n_util_check_password_entry(name, entry, password));
+	return 1;
+}
+
 // get_password_hash(name, raw_password)
 int ModApiUtil::l_get_password_hash(lua_State *L)
 {
@@ -317,6 +344,15 @@ int ModApiUtil::l_get_password_hash(lua_State *L)
 	std::string raw_password = luaL_checkstring(L, 2);
 	std::string hash = translate_password(name, raw_password);
 	lua_pushstring(L, hash.c_str());
+	return 1;
+}
+
+int ModApiUtil::l_native_get_password_hash(lua_State* L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	std::string name = luaL_checkstring(L, 1);
+	std::string raw_password = luaL_checkstring(L, 2);
+	lua_pushstring(L, nativeModApiUtil::n_util_get_password_hash(name, raw_password).c_str());
 	return 1;
 }
 
@@ -336,6 +372,20 @@ int ModApiUtil::l_is_yes(lua_State *L)
 	return 1;
 }
 
+int ModApiUtil::l_native_is_yes(lua_State* L)
+{
+	NO_MAP_LOCK_REQUIRED;
+
+	lua_getglobal(L, "tostring");
+	lua_pushvalue(L, 1);
+	lua_call(L, 1, 1);
+	std::string str = readParam<std::string>(L, -1);
+	lua_pop(L, 1);
+
+	lua_pushboolean(L, nativeModApiUtil::n_util_is_yes(str));
+	return 1;
+}
+
 // get_builtin_path()
 int ModApiUtil::l_get_builtin_path(lua_State *L)
 {
@@ -347,6 +397,15 @@ int ModApiUtil::l_get_builtin_path(lua_State *L)
 	return 1;
 }
 
+int ModApiUtil::l_native_get_builtin_path(lua_State* L)
+{
+	NO_MAP_LOCK_REQUIRED;
+
+	lua_pushstring(L, nativeModApiUtil::n_util_get_builtin_path().c_str());
+
+	return 1;
+}
+
 // get_user_path()
 int ModApiUtil::l_get_user_path(lua_State *L)
 {
@@ -354,6 +413,15 @@ int ModApiUtil::l_get_user_path(lua_State *L)
 
 	std::string path = porting::path_user;
 	lua_pushstring(L, path.c_str());
+
+	return 1;
+}
+
+int ModApiUtil::l_native_get_user_path(lua_State* L)
+{
+	NO_MAP_LOCK_REQUIRED;
+
+	lua_pushstring(L, nativeModApiUtil::n_util_get_user_path().c_str());
 
 	return 1;
 }
@@ -379,6 +447,23 @@ int ModApiUtil::l_compress(lua_State *L)
 	return 1;
 }
 
+int ModApiUtil::l_native_compress(lua_State* L)
+{
+	NO_MAP_LOCK_REQUIRED;
+
+	size_t size;
+	const char *data = luaL_checklstring(L, 1, &size);
+
+	int level = -1;
+	if (!lua_isnone(L, 3) && !lua_isnil(L, 3))
+		level = readParam<float>(L, 3);
+
+	std::string out = nativeModApiUtil::n_util_compress(data, size, level);
+
+	lua_pushlstring(L, out.data(), out.size());
+	return 1;
+}
+
 // decompress(data, method)
 int ModApiUtil::l_decompress(lua_State *L)
 {
@@ -397,6 +482,19 @@ int ModApiUtil::l_decompress(lua_State *L)
 	return 1;
 }
 
+int ModApiUtil::l_native_decompress(lua_State* L)
+{
+	NO_MAP_LOCK_REQUIRED;
+
+	size_t size;
+	const char *data = luaL_checklstring(L, 1, &size);
+
+	std::string out = nativeModApiUtil::n_util_decompress(data, size);
+
+	lua_pushlstring(L, out.data(), out.size());
+	return 1;
+}
+
 // encode_base64(string)
 int ModApiUtil::l_encode_base64(lua_State *L)
 {
@@ -406,6 +504,19 @@ int ModApiUtil::l_encode_base64(lua_State *L)
 	const char *data = luaL_checklstring(L, 1, &size);
 
 	std::string out = base64_encode((const unsigned char *)(data), size);
+
+	lua_pushlstring(L, out.data(), out.size());
+	return 1;
+}
+
+int ModApiUtil::l_native_encode_base64(lua_State* L)
+{
+	NO_MAP_LOCK_REQUIRED;
+
+	size_t size;
+	const char *data = luaL_checklstring(L, 1, &size);
+
+	std::string out = nativeModApiUtil::n_util_encode_base64(data, size);
 
 	lua_pushlstring(L, out.data(), out.size());
 	return 1;
@@ -429,6 +540,21 @@ int ModApiUtil::l_decode_base64(lua_State *L)
 	return 1;
 }
 
+int ModApiUtil::l_native_decode_base64(lua_State* L)
+{
+	NO_MAP_LOCK_REQUIRED;
+
+	size_t size;
+	const char *d = luaL_checklstring(L, 1, &size);
+
+	std::string out;
+	if (nativeModApiUtil::n_util_decode_base64(d, size, out) == 0)
+		return 0;
+
+	lua_pushlstring(L, out.data(), out.size());
+	return 1;
+}
+
 // mkdir(path)
 int ModApiUtil::l_mkdir(lua_State *L)
 {
@@ -436,6 +562,15 @@ int ModApiUtil::l_mkdir(lua_State *L)
 	const char *path = luaL_checkstring(L, 1);
 	CHECK_SECURE_PATH(L, path, true);
 	lua_pushboolean(L, fs::CreateAllDirs(path));
+	return 1;
+}
+
+int ModApiUtil::l_native_mkdir(lua_State* L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	const char *path = luaL_checkstring(L, 1);
+	CHECK_SECURE_PATH(L, path, true);
+	lua_pushboolean(L, nativeModApiUtil::n_util_mkdir(path));
 	return 1;
 }
 
@@ -464,6 +599,30 @@ int ModApiUtil::l_get_dir_list(lua_State *L)
 	return 1;
 }
 
+int ModApiUtil::l_native_get_dir_list(lua_State* L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	const char *path = luaL_checkstring(L, 1);
+	bool list_all = !lua_isboolean(L, 2);	// if its not a boolean list all
+	bool list_dirs = readParam<bool>(L, 2); // true: list dirs, false: list files
+
+	CHECK_SECURE_PATH(L, path, false);
+
+	std::vector<fs::DirListNode> list = nativeModApiUtil::n_util_get_dir_list(path);
+
+	int index = 0;
+	lua_newtable(L);
+
+	for (const fs::DirListNode &dln : list) {
+		if (list_all || list_dirs == dln.dir) {
+			lua_pushstring(L, dln.name.c_str());
+			lua_rawseti(L, -2, ++index);
+		}
+	}
+
+	return 1;
+}
+
 // safe_file_write(path, content)
 int ModApiUtil::l_safe_file_write(lua_State *L)
 {
@@ -475,6 +634,21 @@ int ModApiUtil::l_safe_file_write(lua_State *L)
 	CHECK_SECURE_PATH(L, path, true);
 
 	bool ret = fs::safeWriteToFile(path, std::string(content, size));
+	lua_pushboolean(L, ret);
+
+	return 1;
+}
+
+int ModApiUtil::l_native_safe_file_write(lua_State* L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	const char *path = luaL_checkstring(L, 1);
+	size_t size;
+	const char *content = luaL_checklstring(L, 2, &size);
+
+	CHECK_SECURE_PATH(L, path, true);
+
+	bool ret = nativeModApiUtil::n_util_safe_file_write(path, size, content);
 	lua_pushboolean(L, ret);
 
 	return 1;
@@ -529,6 +703,47 @@ int ModApiUtil::l_request_insecure_environment(lua_State *L)
 	return 1;
 }
 
+int ModApiUtil::l_native_request_insecure_environment(lua_State* L)
+{
+	NO_MAP_LOCK_REQUIRED;
+
+	// Just return _G if security is disabled
+	if (!ScriptApiSecurity::isSecure(L)) {
+		lua_getglobal(L, "_G");
+		return 1;
+	}
+
+	// We have to make sure that this function is being called directly by
+	// a mod, otherwise a malicious mod could override this function and
+	// steal its return value.
+	lua_Debug info;
+	// Make sure there's only one item below this function on the stack...
+	if (lua_getstack(L, 2, &info)) {
+		return 0;
+	}
+	FATAL_ERROR_IF(!lua_getstack(L, 1, &info), "lua_getstack() failed");
+	FATAL_ERROR_IF(!lua_getinfo(L, "S", &info), "lua_getinfo() failed");
+	// ...and that that item is the main file scope.
+	if (strcmp(info.what, "main") != 0) {
+		return 0;
+	}
+
+	// Get mod name
+	lua_rawgeti(L, LUA_REGISTRYINDEX, CUSTOM_RIDX_CURRENT_MOD_NAME);
+	if (!lua_isstring(L, -1)) {
+		return 0;
+	}
+
+	// Check secure.trusted_mods
+	std::string mod_name = readParam<std::string>(L, -1); 
+	if (nativeModApiUtil::n_util_request_insecure_environment(mod_name) == 0)
+		return 0;
+	
+	// Push insecure environment
+	lua_rawgeti(L, LUA_REGISTRYINDEX, CUSTOM_RIDX_GLOBALS_BACKUP);
+	return 1;
+}
+
 // get_version()
 int ModApiUtil::l_get_version(lua_State *L)
 {
@@ -542,6 +757,25 @@ int ModApiUtil::l_get_version(lua_State *L)
 	lua_setfield(L, table, "string");
 
 	if (strcmp(g_version_string, g_version_hash) != 0) {
+		lua_pushstring(L, g_version_hash);
+		lua_setfield(L, table, "hash");
+	}
+
+	return 1;
+}
+
+int ModApiUtil::l_native_get_version(lua_State* L)
+{
+	lua_createtable(L, 0, 3);
+	int table = lua_gettop(L);
+
+	lua_pushstring(L, PROJECT_NAME_C);
+	lua_setfield(L, table, "project");
+
+	lua_pushstring(L, g_version_string);
+	lua_setfield(L, table, "string");
+
+	if (nativeModApiUtil::n_util_get_version()) {
 		lua_pushstring(L, g_version_hash);
 		lua_setfield(L, table, "hash");
 	}
@@ -576,40 +810,81 @@ int ModApiUtil::l_sha1(lua_State *L)
 	return 1;
 }
 
+int ModApiUtil::l_native_sha1(lua_State* L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	size_t size;
+	const char *data = luaL_checklstring(L, 1, &size);
+	bool hex = !lua_isboolean(L, 2) || !readParam<bool>(L, 2);
+
+	std::string data_sha1;
+	nativeModApiUtil::n_util_sha1(data, size, data_sha1);
+
+	if (hex) {
+		std::string sha1_hex = hex_encode(data_sha1);
+		lua_pushstring(L, sha1_hex.c_str());
+	} else {
+		lua_pushlstring(L, data_sha1.data(), data_sha1.size());
+	}
+
+	return 1;
+}
+
 void ModApiUtil::Initialize(lua_State *L, int top)
 {
 	API_FCT(log);
+	API_FCT(native_log);
 
 	API_FCT(get_us_time);
+	API_FCT(native_get_us_time);
 
 	API_FCT(parse_json);
+	API_FCT(native_parse_json);
 	API_FCT(write_json);
+	API_FCT(native_write_json);
 
 	API_FCT(get_dig_params);
+	API_FCT(native_get_dig_params);
 	API_FCT(get_hit_params);
+	API_FCT(native_get_hit_params);
 
 	API_FCT(check_password_entry);
+	API_FCT(native_check_password_entry);
 	API_FCT(get_password_hash);
+	API_FCT(native_get_password_hash);
 
 	API_FCT(is_yes);
+	API_FCT(native_is_yes);
 
 	API_FCT(get_builtin_path);
+	API_FCT(native_get_builtin_path);
 	API_FCT(get_user_path);
+	API_FCT(native_get_user_path);
 
 	API_FCT(compress);
+	API_FCT(native_compress);
 	API_FCT(decompress);
+	API_FCT(native_decompress);
 
 	API_FCT(mkdir);
+	API_FCT(native_mkdir);
 	API_FCT(get_dir_list);
+	API_FCT(native_get_dir_list);
 	API_FCT(safe_file_write);
+	API_FCT(native_safe_file_write);
 
 	API_FCT(request_insecure_environment);
+	API_FCT(native_request_insecure_environment);
 
 	API_FCT(encode_base64);
+	API_FCT(native_encode_base64);
 	API_FCT(decode_base64);
+	API_FCT(native_decode_base64);
 
 	API_FCT(get_version);
+	API_FCT(native_get_version);
 	API_FCT(sha1);
+	API_FCT(native_sha1);
 
 	LuaSettings::create(L, g_settings, g_settings_path);
 	lua_setfield(L, top, "settings");
@@ -618,49 +893,75 @@ void ModApiUtil::Initialize(lua_State *L, int top)
 void ModApiUtil::InitializeClient(lua_State *L, int top)
 {
 	API_FCT(log);
+	API_FCT(native_log);
 
 	API_FCT(get_us_time);
+	API_FCT(native_get_us_time);
 
 	API_FCT(parse_json);
+	API_FCT(native_parse_json);
 	API_FCT(write_json);
+	API_FCT(native_write_json);
 
 	API_FCT(is_yes);
+	API_FCT(native_is_yes);
 
 	API_FCT(compress);
+	API_FCT(native_compress);
 	API_FCT(decompress);
+	API_FCT(native_decompress);
 
 	API_FCT(encode_base64);
+	API_FCT(native_encode_base64);
 	API_FCT(decode_base64);
+	API_FCT(native_decode_base64);
 
 	API_FCT(get_version);
+	API_FCT(native_get_version);
 	API_FCT(sha1);
+	API_FCT(native_sha1);
 }
 
 void ModApiUtil::InitializeAsync(lua_State *L, int top)
 {
 	API_FCT(log);
+	API_FCT(native_log);
 
 	API_FCT(get_us_time);
+	API_FCT(native_get_us_time);
 
 	API_FCT(parse_json);
+	API_FCT(native_parse_json);
 	API_FCT(write_json);
+	API_FCT(native_write_json);
 
 	API_FCT(is_yes);
+	API_FCT(native_is_yes);
 
 	API_FCT(get_builtin_path);
+	API_FCT(native_get_builtin_path);
 	API_FCT(get_user_path);
+	API_FCT(native_get_user_path);
 
 	API_FCT(compress);
+	API_FCT(native_compress);
 	API_FCT(decompress);
+	API_FCT(native_decompress);
 
 	API_FCT(mkdir);
+	API_FCT(native_mkdir);
 	API_FCT(get_dir_list);
+	API_FCT(native_get_dir_list);
 
 	API_FCT(encode_base64);
+	API_FCT(native_encode_base64);
 	API_FCT(decode_base64);
+	API_FCT(native_decode_base64);
 
 	API_FCT(get_version);
+	API_FCT(native_get_version);
 	API_FCT(sha1);
+	API_FCT(native_sha1);
 
 	LuaSettings::create(L, g_settings, g_settings_path);
 	lua_setfield(L, top, "settings");

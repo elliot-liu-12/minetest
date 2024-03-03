@@ -87,11 +87,13 @@ int NodeMetaRef::gc_object(lua_State *L) {
 // get_inventory(self)
 int NodeMetaRef::l_get_inventory(lua_State *L)
 {
+	std::cout << "lua get inventory starts" << std::endl;
 	MAP_LOCK_REQUIRED;
 
 	NodeMetaRef *ref = checkobject(L, 1);
 	ref->getmeta(true);  // try to ensure the metadata exists
 	InvRef::createNodeMeta(L, ref->m_p);
+	std::cout << "lua function runs" << std::endl;
 	return 1;
 }
 
@@ -100,10 +102,12 @@ int NodeMetaRef::l_native_get_inventory(lua_State* L)
 	MAP_LOCK_REQUIRED;
 
 	NodeMetaRef *ref = checkobject(L, 1);
+	std::cout << "l_native before n_get_inv" << std::endl;
 
 	// call native function
 	nativeModApiNodemeta::n_get_inventory(ref);
 
+	std::cout << "l_native after" << std::endl;
 	InvRef::createNodeMeta(L, ref->m_p);
 	return 1;
 }

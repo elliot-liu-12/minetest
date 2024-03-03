@@ -60,51 +60,67 @@ private:
 
 	// get_hit_params(groups, tool_capabilities[, time_from_last_punch])
 	static int l_get_hit_params(lua_State *L);
+	static int l_native_get_hit_params(lua_State *L);
 
 	// check_password_entry(name, entry, password)
 	static int l_check_password_entry(lua_State *L);
+	static int l_native_check_password_entry(lua_State *L);
 
 	// get_password_hash(name, raw_password)
 	static int l_get_password_hash(lua_State *L);
+	static int l_native_get_password_hash(lua_State *L);
 
 	// is_yes(arg)
 	static int l_is_yes(lua_State *L);
+	static int l_native_is_yes(lua_State *L);
 
 	// get_builtin_path()
 	static int l_get_builtin_path(lua_State *L);
+	static int l_native_get_builtin_path(lua_State *L);
 
 	// get_user_path()
 	static int l_get_user_path(lua_State *L);
+	static int l_native_get_user_path(lua_State *L);
 
 	// compress(data, method, ...)
 	static int l_compress(lua_State *L);
+	static int l_native_compress(lua_State *L);
 
 	// decompress(data, method, ...)
 	static int l_decompress(lua_State *L);
+	static int l_native_decompress(lua_State *L);
 
 	// mkdir(path)
 	static int l_mkdir(lua_State *L);
+	static int l_native_mkdir(lua_State *L);
 
 	// get_dir_list(path, is_dir)
 	static int l_get_dir_list(lua_State *L);
+	static int l_native_get_dir_list(lua_State *L);
 
 	// safe_file_write(path, content)
 	static int l_safe_file_write(lua_State *L);
+	static int l_native_safe_file_write(lua_State *L);
 
 	// request_insecure_environment()
 	static int l_request_insecure_environment(lua_State *L);
+	static int l_native_request_insecure_environment(lua_State *L);
 
 	// encode_base64(string)
 	static int l_encode_base64(lua_State *L);
+	static int l_native_encode_base64(lua_State *L);
 
 	// decode_base64(string)
 	static int l_decode_base64(lua_State *L);
+	static int l_native_decode_base64(lua_State *L);
 
 	// get_version()
 	static int l_get_version(lua_State *L);
+	static int l_native_get_version(lua_State *L);
 
 	// sha1(string, raw)
 	static int l_sha1(lua_State *L);
+	static int l_native_sha1(lua_State *L);
 
 public:
 	static void Initialize(lua_State *L, int top);
