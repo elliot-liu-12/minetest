@@ -1,7 +1,7 @@
 -- vmanip test mod
 -- test vmanip class methods
 
-minetest.log("--NativeLuaVoxelManip class tests-- (DevTest doesnt have default mod, so tests wont behave properly unless they are run in MineTest.)")
+minetest.log("--NativeLuaVoxelManip class tests--")
 
 --compare tables
 -- https://stackoverflow.com/questions/20325332/how-to-check-if-two-tablesobjects-have-the-same-value-in-lua
@@ -35,6 +35,82 @@ function equals(o1, o2, ignore_mt)
     end
     return true
 end
+
+--register custom dirt
+minetest.register_node(":dirt", {
+    description = "Dirt",
+    tiles = {"default_dirt.png"},
+    groups = {crumbly = 3, soil = 1}
+})
+
+--register custom stone
+minetest.register_node(":stone", {
+    description = "Stone",
+    tiles = {"default_stone.png"},
+    groups = {cracky = 3}
+})
+
+--register water
+local WATER_ALPHA = "^[opacity:" .. 160
+local WATER_VISC = 1
+minetest.register_node(":water_source", {
+	description = "Water Source".."\n"..
+		"Swimmable, spreading, renewable liquid".."\n"..
+		"Drowning damage: 1",
+	drawtype = "liquid",
+	waving = 3,
+	tiles = {"default_water.png"..WATER_ALPHA},
+	special_tiles = {
+		{name = "default_water.png"..WATER_ALPHA, backface_culling = false},
+		{name = "default_water.png"..WATER_ALPHA, backface_culling = true},
+	},
+	use_texture_alpha = "blend",
+	paramtype = "light",
+	walkable = false,
+	pointable = false,
+	diggable = false,
+	buildable_to = true,
+	is_ground_content = false,
+	drowning = 1,
+	liquidtype = "source",
+	liquid_alternative_flowing = ":water_flowing",
+	liquid_alternative_source = ":water_source",
+	liquid_viscosity = WATER_VISC,
+	post_effect_color = {a = 64, r = 100, g = 100, b = 200},
+	post_effect_color_shaded = true,
+	groups = {water = 3, liquid = 3},
+})
+
+minetest.register_node(":water_flowing", {
+	description = "Flowing Water".."\n"..
+		"Swimmable, spreading, renewable liquid".."\n"..
+		"Drowning damage: 1",
+	drawtype = "flowingliquid",
+	waving = 3,
+	tiles = {"default_water_flowing.png"},
+	special_tiles = {
+		{name = "default_water_flowing.png"..WATER_ALPHA,
+			backface_culling = false},
+		{name = "default_water_flowing.png"..WATER_ALPHA,
+			backface_culling = false},
+	},
+	use_texture_alpha = "blend",
+	paramtype = "light",
+	paramtype2 = "flowingliquid",
+	walkable = false,
+	pointable = false,
+	diggable = false,
+	buildable_to = true,
+	is_ground_content = false,
+	drowning = 1,
+	liquidtype = "flowing",
+	liquid_alternative_flowing = ":water_flowing",
+	liquid_alternative_source = ":water_source",
+	liquid_viscosity = WATER_VISC,
+	post_effect_color = {a = 64, r = 100, g = 100, b = 200},
+	post_effect_color_shaded = true,
+	groups = {water = 3, liquid = 3},
+})
 
 --read_from_map()
 --lua test
@@ -234,7 +310,7 @@ minetest.register_chatcommand("lua_vmanip_set_data", {
 
 		--edit data in vmanip
 		local data = voxelManip:get_data();
-		local dirt_node = minetest.get_content_id("default:dirt");
+		local dirt_node = minetest.get_content_id("dirt");
 		for z = pos1.z, pos2.z do
 			for y = pos1.y, pos2.y do
 				for x = pos1.x, pos2.x do
@@ -288,7 +364,7 @@ minetest.register_chatcommand("native_vmanip_set_data", {
 
 		--edit data in vmanip
 		local data = voxelManip:get_data();
-		local dirt_node = minetest.get_content_id("default:dirt");
+		local dirt_node = minetest.get_content_id("dirt");
 		for z = pos1.z, pos2.z do
 			for y = pos1.y, pos2.y do
 				for x = pos1.x, pos2.x do
@@ -349,7 +425,7 @@ minetest.register_chatcommand("test_vmanip_set_data", {
 		--edit data in vmanip
 		local data = voxelManip:get_data();
 		local data2 = voxelManip2:get_data();
-		local dirt_node = minetest.get_content_id("default:dirt");
+		local dirt_node = minetest.get_content_id("dirt");
 		for z = pos1.z, pos2.z do
 			for y = pos1.y, pos2.y do
 				for x = pos1.x, pos2.x do
@@ -407,8 +483,9 @@ minetest.register_chatcommand("lua_vmanip_write_to_map", {
 		}
 
 		--edit data in vmanip
-		local data = voxelManip:get_data();
-		local dirt_node = minetest.get_content_id("default:dirt");
+		local oldData = voxelManip:get_data(); --original data.
+		local data = voxelManip:get_data(); --will be changed into dirt cube data.
+		local dirt_node = minetest.get_content_id("dirt");
 		for z = pos1.z, pos2.z do
 			for y = pos1.y, pos2.y do
 				for x = pos1.x, pos2.x do
@@ -423,11 +500,16 @@ minetest.register_chatcommand("lua_vmanip_write_to_map", {
 
         -- Write changes to the map
         voxelManip:write_to_map(true);
-		minetest.log("If write_to_map was successful, there will be a 10x10x10 dirt cube in the world.");
+		data = voxelManip:get_data();
 		voxelManip = nil;
 
-        if true then 
-            return true, "Success, write_to_map() returned: nil"
+		--Check results
+		local res = equals(oldData, data);
+
+        if not res then 
+            return true, "Success, write_to_map() spawned the dirt cube in the map."
+        else
+            return false, "Failure, write_to_map() didnt spawn the dirt cube in the map."
         end
     end
 })
@@ -455,8 +537,9 @@ minetest.register_chatcommand("native_vmanip_write_to_map", {
 		}
 
 		--edit data in vmanip
-		local data = voxelManip:get_data();
-		local stone_node = minetest.get_content_id("default:stone");
+		local oldData = voxelManip:get_data(); --original data.
+		local data = voxelManip:get_data(); --will be changed into dirt cube data.
+		local stone_node = minetest.get_content_id("dirt");
 		for z = pos1.z, pos2.z do
 			for y = pos1.y, pos2.y do
 				for x = pos1.x, pos2.x do
@@ -471,11 +554,16 @@ minetest.register_chatcommand("native_vmanip_write_to_map", {
 
         -- Write changes to the map
         voxelManip:native_write_to_map(true);
-		minetest.log("If write_to_map was successful, there will be a 10x10x10 stone cube in the world.");
+		data = voxelManip:get_data();
 		voxelManip = nil;
 
-        if true then 
-            return true, "Success, native_write_to_map() returned: nil"
+		--Check results
+		local res = equals(oldData, data);
+
+        if not res then 
+            return true, "Success, native_write_to_map() spawned the dirt cube in the map."
+        else
+            return false, "Failure, native_write_to_map() didnt spawn the dirt cube in the map."
         end
     end
 })
@@ -505,7 +593,8 @@ minetest.register_chatcommand("test_vmanip_write_to_map", {
 
         --add dirt cube
         local data_dirt = voxelManip:get_data()
-        local dirt_node = minetest.get_content_id("default:dirt")
+		local old_data_dirt = voxelManip:get_data()
+        local dirt_node = minetest.get_content_id("dirt")
         for z = pos1_dirt.z, pos2_dirt.z do
             for y = pos1_dirt.y, pos2_dirt.y do
                 for x = pos1_dirt.x, pos2_dirt.x do
@@ -518,6 +607,7 @@ minetest.register_chatcommand("test_vmanip_write_to_map", {
         --Spawn cube
         voxelManip:set_data(data_dirt)
         voxelManip:write_to_map(true)
+		data_dirt = voxelManip:get_data()
 
 		--STONE CUBE (NATIVE)
         --Calculate positions
@@ -535,7 +625,8 @@ minetest.register_chatcommand("test_vmanip_write_to_map", {
 
         --add stone cube
         local data_stone = voxelManip:get_data()
-        local stone_node = minetest.get_content_id("default:stone")
+		local old_data_stone = voxelManip:get_data()
+        local stone_node = minetest.get_content_id("stone")
         for z = pos1_stone.z, pos2_stone.z do
             for y = pos1_stone.y, pos2_stone.y do
                 for x = pos1_stone.x, pos2_stone.x do
@@ -548,10 +639,17 @@ minetest.register_chatcommand("test_vmanip_write_to_map", {
         --spawn cube
         voxelManip:set_data(data_stone)
         voxelManip:write_to_map(true)
+		data_stone = voxelManip:get_data()
 		voxelManip = nil
       
-        minetest.log("If write_to_map was successful, there will be a 10x10x10 dirt cube and a 10x10x10 stone cube separated by a one-block gap at the same height in the world.")
-        return true, "Success, native_write_to_map() returned: nil"
+		--Check results
+		local lres = (equals(old_data_dirt, data_dirt));
+		local nres = (equals(old_data_stone, data_stone));
+        if not lres and not nres then 
+            return true, "Success, function output matches - check console for more details."
+        else
+            return false, "Failure, function output does not match - check console for more details."
+        end
     end
 })
 
@@ -573,13 +671,13 @@ minetest.register_chatcommand("lua_vmanip_get_node_at", {
 			z = pos.z + dir.z
 		}
 
-		 minetest.set_node(front_pos, {name = "default:dirt"})
+		 minetest.set_node(front_pos, {name = "dirt"})
 
 		--load voxelmanip and get node
 		voxelManip:read_from_map(front_pos, front_pos);
 
 		--check result
-		local res = voxelManip:get_node_at(front_pos).name == "default:dirt";
+		local res = voxelManip:get_node_at(front_pos).name == "dirt";
 		voxelManip = nil;
         if res then
             return true, "Success, get_node_at returned dirt block data."
@@ -606,13 +704,13 @@ minetest.register_chatcommand("native_vmanip_get_node_at", {
 			z = pos.z + dir.z
 		}
 
-		 minetest.set_node(front_pos, {name = "default:dirt"})
+		 minetest.set_node(front_pos, {name = "dirt"})
 
 		--load voxelmanip and get node
 		voxelManip:read_from_map(front_pos, front_pos);
 
 		--check result
-		local res = voxelManip:native_get_node_at(front_pos).name == "default:dirt";
+		local res = voxelManip:native_get_node_at(front_pos).name == "dirt";
 		voxelManip = nil;
         if res then
             return true, "Success, get_node_at returned dirt block data."
@@ -639,14 +737,14 @@ minetest.register_chatcommand("test_vmanip_get_node_at", {
 			z = pos.z + dir.z
 		}
 
-		minetest.set_node(front_pos, {name = "default:dirt"})
+		minetest.set_node(front_pos, {name = "dirt"})
 
 		--load voxelmanip and get node
 		voxelManip:read_from_map(front_pos, front_pos);
 
 		--check result
-		local lres = voxelManip:get_node_at(front_pos).name == "default:dirt";
-		local nres = voxelManip:native_get_node_at(front_pos).name == "default:dirt";
+		local lres = voxelManip:get_node_at(front_pos).name == "dirt";
+		local nres = voxelManip:native_get_node_at(front_pos).name == "dirt";
 		voxelManip = nil;
         
         if lres == nres then
@@ -679,10 +777,10 @@ minetest.register_chatcommand("lua_vmanip_set_node_at", {
 		voxelManip:read_from_map(front_pos, front_pos);
 
 		--set node
-        voxelManip:set_node_at(front_pos, {name = "default:dirt"})
+        voxelManip:set_node_at(front_pos, {name = "dirt"})
 
 		--check if node was set
-		local res = voxelManip:get_node_at(front_pos).name == "default:dirt";
+		local res = voxelManip:get_node_at(front_pos).name == "dirt";
 		voxelManip:write_to_map();
 		voxelManip = nil;
         
@@ -715,10 +813,10 @@ minetest.register_chatcommand("native_vmanip_set_node_at", {
 		voxelManip:read_from_map(front_pos, front_pos);
 
 		--set node
-        voxelManip:native_set_node_at(front_pos, {name = "default:dirt"})
+        voxelManip:native_set_node_at(front_pos, {name = "dirt"})
 
 		--check if node was set
-		local res = voxelManip:get_node_at(front_pos).name == "default:dirt";
+		local res = voxelManip:get_node_at(front_pos).name == "dirt";
 		voxelManip:write_to_map();
 		voxelManip = nil;
         
@@ -751,20 +849,20 @@ minetest.register_chatcommand("test_vmanip_set_node_at", {
 		voxelManip:read_from_map(front_pos, front_pos);
 
 		--set node
-        voxelManip:set_node_at(front_pos, {name = "default:dirt"})
+        voxelManip:set_node_at(front_pos, {name = "dirt"})
 
 		--check if node was set
-		local lres = voxelManip:get_node_at(front_pos).name == "default:dirt";
+		local lres = voxelManip:get_node_at(front_pos).name == "dirt";
 		voxelManip:write_to_map();
 		
 		--load voxelmanip
 		voxelManip:read_from_map(front_pos, front_pos);
 
 		--set node
-        voxelManip:native_set_node_at(front_pos, {name = "default:dirt"})
+        voxelManip:native_set_node_at(front_pos, {name = "dirt"})
 
 		--check if node was set
-		local nres = voxelManip:get_node_at(front_pos).name == "default:dirt";
+		local nres = voxelManip:get_node_at(front_pos).name == "dirt";
 		voxelManip:write_to_map();
         voxelManip = nil;
     
@@ -835,7 +933,8 @@ minetest.register_chatcommand("test_vmanip_update_map", {
     end
 })
 
---update_liquids()
+--FIXME: ONLY WORKS IN MINETEST, NOT DEVTEST DUE TO DEFAULT:WATERSOURCE NOT EXISTING (basenodes:water_source)
+--update_liquids() 
 --lua test
 minetest.register_chatcommand("lua_vmanip_update_liquids", {
     description = "test vmanip class method update_liquids (lua version)",
@@ -1029,6 +1128,42 @@ minetest.register_chatcommand("test_vmanip_update_liquids", {
 minetest.register_chatcommand("lua_vmanip_calc_lighting", {
     description = "test vmanip class method calc_lighting (lua version)",
     func = function(self)
+		--get voxel manip
+		local player = minetest.get_player_by_name("singleplayer");
+        local pos = player:get_pos();
+		local dir = player:get_look_dir();
+		local voxelManip = minetest.get_voxel_manip();
+		
+		--create positions
+		local pos_front = vector.round(vector.add(pos, vector.multiply(dir, 10)));
+        local pos1 = vector.subtract(pos_front, 4);
+        local pos2 = vector.add(pos_front, 5);
+
+		--read area into Vmanip
+		local res1, res2 = voxelManip:read_from_map(pos1, pos2);
+		local data = {};
+		local area = VoxelArea:new{
+            MinEdge = res1,
+            MaxEdge = res2
+        }
+
+		--edit light data in vmanip
+		for z = pos1.z, pos2.z do
+			for y = pos1.y, pos2.y do
+				for x = pos1.x, pos2.x do
+					local vi = area:index(x, y, z)
+					data[vi] = 0;
+				end
+			end
+		end
+		voxelManip:set_lighting(data);
+		voxelManip:calc_lighting();
+		--voxelManip:set_data(data);
+
+        -- Write changes to the map
+        voxelManip:write_to_map(true);
+		voxelManip = nil;
+
         local res = true;
         if res == nil then 
             return true, "Success, calc_lighting() returned: nil"
@@ -1070,8 +1205,41 @@ minetest.register_chatcommand("test_vmanip_calc_lighting", {
 minetest.register_chatcommand("lua_vmanip_set_lighting", {
     description = "test vmanip class method set_lighting (lua version)",
     func = function(self)
-        local res = true;
-        if res == nil then 
+		--get voxel manip
+		local player = minetest.get_player_by_name("singleplayer");
+        local pos = player:get_pos();
+		local dir = player:get_look_dir();
+		local voxelManip = minetest.get_voxel_manip();
+		
+		--create positions
+		local pos_front = vector.round(vector.add(pos, vector.multiply(dir, 10)));
+        local pos1 = vector.subtract(pos_front, 4);
+        local pos2 = vector.add(pos_front, 5);
+
+		--read area into Vmanip
+		local res1, res2 = voxelManip:read_from_map(pos1, pos2);
+		local data = voxelManip:get_light_data();
+		local area = VoxelArea:new{
+            MinEdge = res1,
+            MaxEdge = res2
+        }
+
+		--edit light data in vmanip
+		for z = pos1.z, pos2.z do
+			for y = pos1.y, pos2.y do
+				for x = pos1.x, pos2.x do
+					local vi = area:index(x, y, z)
+					data[vi] = 0;
+				end
+			end
+		end
+		voxelManip:set_lighting(data);
+
+        -- Write changes to the map
+        voxelManip:write_to_map(true);
+		voxelManip = nil;
+        
+        if true then 
             return true, "Success, set_lighting() returned: nil"
         else
             return true, "Success, set_lighting() returned: not nil"
@@ -1111,39 +1279,35 @@ minetest.register_chatcommand("test_vmanip_set_lighting", {
 minetest.register_chatcommand("lua_vmanip_get_light_data", {
     description = "test vmanip class method get_light_data (lua version)",
     func = function(self)
-
+		--get voxel manip
 		local player = minetest.get_player_by_name("singleplayer");
         local pos = player:get_pos();
-		local minp = {x = pos.x - 5, y = pos.y - 5, z = pos.z};
-		local maxp = {x = pos.x + 5, y = pos.y + 5, z = pos.z};
+		local dir = player:get_look_dir();
+		local voxelManip = minetest.get_voxel_manip();
 		
-		local vm = minetest.get_voxel_manip(minp, maxp);
-		local light_data = vm:get_light_data(minp, maxp);
+		--create positions
+		local pos_front = vector.round(vector.add(pos, vector.multiply(dir, 10)));
+        local pos1 = vector.subtract(pos_front, 4);
+        local pos2 = vector.add(pos_front, 5);
 
-		-- Calculate voxel index based on coordinates
-		local function get_voxel_index(x, y, z)
-			return (x - minp.x + 1) + (maxp.x - minp.x + 1) * ((y - minp.y + 1) + (maxp.y - minp.y + 1) * (z - minp.z + 1));
-		end
+		--read into Vmanip
+		local res1, res2 = voxelManip:read_from_map(pos1, pos2);
+		local area = VoxelArea:new{
+			MinEdge = res1,
+			MaxEdge = res2
+		}
 
-		-- Modify the light data as needed
-		for z = minp.z, maxp.z do
-			for y = minp.y, maxp.y do
-				for x = minp.x, maxp.x do
-					local vi = get_voxel_index(x, y, z);
-					-- Modify the light level of each node
-					light_data[vi] = 14;  -- Set maximum light level (15) for each node
-				end
-			end
-		end
+		--get data in vmanip
+		local data = voxelManip:get_light_data();
+		voxelManip = nil;
 
-		-- Update the light in the region
-		vm:set_light_data(minp, maxp, light_data);
-		vm:write_to_map(true);
+		--check results
+        local res = next(data) ~= nil;
 
-        if true then 
-            return true, "Success, get_light_data() returned: nil"
+        if res then 
+            return true, "Success, get_light_data() returned light data array."
         else
-            return true, "Success, get_light_data() returned: not nil"
+            return false, "Failure, get_light_data() didnt return light data array."
         end
     end
 })
@@ -1152,11 +1316,35 @@ minetest.register_chatcommand("lua_vmanip_get_light_data", {
 minetest.register_chatcommand("native_vmanip_get_light_data", {
     description = "test vmanip class method get_light_data (native version)",
     func = function(self)
-        local res = true;
-        if res == nil then
-            return true, "Success, get_light_data() returned: nil"
+		--get voxel manip
+		local player = minetest.get_player_by_name("singleplayer");
+        local pos = player:get_pos();
+		local dir = player:get_look_dir();
+		local voxelManip = minetest.get_voxel_manip();
+		
+		--create positions
+		local pos_front = vector.round(vector.add(pos, vector.multiply(dir, 10)));
+        local pos1 = vector.subtract(pos_front, 4);
+        local pos2 = vector.add(pos_front, 5);
+
+		--read into Vmanip
+		local res1, res2 = voxelManip:read_from_map(pos1, pos2);
+		local area = VoxelArea:new{
+			MinEdge = res1,
+			MaxEdge = res2
+		}
+
+		--get data in vmanip
+		local data = voxelManip:native_get_light_data();
+		voxelManip = nil;
+
+		--check results
+        local res = next(data) ~= nil;
+
+        if res then 
+            return true, "Success, native_get_light_data() returned light data array."
         else
-            return true, "Success, get_light_data() returned: not nil"
+            return false, "Failure, native_get_light_data() didnt return light data array."
         end
     end
 })
@@ -1165,9 +1353,35 @@ minetest.register_chatcommand("native_vmanip_get_light_data", {
 minetest.register_chatcommand("test_vmanip_get_light_data", {
     description = "compares output of lua and native command for get_light_data()",
     func = function(self)
-        local lres = true;
-        local nres = true;
-        if lres == nres then
+		--get voxel manip
+		local player = minetest.get_player_by_name("singleplayer");
+        local pos = player:get_pos();
+		local dir = player:get_look_dir();
+		local voxelManip = minetest.get_voxel_manip();
+		
+		--create positions
+		local pos_front = vector.round(vector.add(pos, vector.multiply(dir, 10)));
+        local pos1 = vector.subtract(pos_front, 4);
+        local pos2 = vector.add(pos_front, 5);
+
+		--read into Vmanip
+		local res1, res2 = voxelManip:read_from_map(pos1, pos2);
+		local area = VoxelArea:new{
+			MinEdge = res1,
+			MaxEdge = res2
+		}
+
+		--get light data in vmanip
+		local ldata = voxelManip:get_light_data();
+		local ndata = voxelManip:native_get_light_data();
+		voxelManip = nil;
+
+		--check results
+		local equalData = equals(ldata, ndata);
+        local lres = next(ldata) ~= nil;
+		local nres = next(ndata) ~= nil;
+        local finalRes = (lres == nres) and equalData;
+        if finalRes then
             return true, "Success, function output matches - check console for more details"
         else
             return false, "Failure, function output does not match - check console for more details"
@@ -1180,11 +1394,59 @@ minetest.register_chatcommand("test_vmanip_get_light_data", {
 minetest.register_chatcommand("lua_vmanip_set_light_data", {
     description = "test vmanip class method set_light_data (lua version)",
     func = function(self)
+        --get voxel manip
+		local player = minetest.get_player_by_name("singleplayer");
+        local pos = player:get_pos();
+		local dir = player:get_look_dir();
+		local voxelManip = minetest.get_voxel_manip();
+		
+		--create positions
+		local pos_front = vector.round(vector.add(pos, vector.multiply(dir, 10)));
+        local pos1 = vector.subtract(pos_front, 4);
+        local pos2 = vector.add(pos_front, 5);
+
+		--read into Vmanip
+		local res1, res2 = voxelManip:read_from_map(pos1, pos2);
+		local area = VoxelArea:new{
+			MinEdge = res1,
+			MaxEdge = res2
+		}
+
+		--edit data in vmanip
+		local data = voxelManip:get_light_data();
+		for z = pos1.z, pos2.z do
+			for y = pos1.y, pos2.y do
+				for x = pos1.x, pos2.x do
+					local vi = area:index(x, y, z)
+						data[vi] = 1;
+						minetest.log(data[vi]);
+				end
+			end
+		end
+
+		voxelManip:set_light_data(data);
+		voxelManip:write_to_map(true);
+		
+		--Check results
+		minetest.log("\nCHECKING\n")
         local res = true;
-        if res == nil then 
-            return true, "Success, set_light_data() returned: nil"
+		data = voxelManip:get_light_data();
+		for z = pos1.z, pos2.z do
+			for y = pos1.y, pos2.y do
+				for x = pos1.x, pos2.x do
+					local vi = area:index(x, y, z)
+						minetest.log(data[vi])
+						if(data[vi] ~= 1) then
+							res = false;
+						end						
+				end
+			end
+		end
+		voxelManip = nil;
+        if res then 
+            return true, "Success, set_light_data() changed light data to 0."
         else
-            return true, "Success, set_light_data() returned: not nil"
+            return false, "Failure, set_light_data() didnt change light data to 0."
         end
     end
 })
@@ -1221,11 +1483,34 @@ minetest.register_chatcommand("test_vmanip_set_light_data", {
 minetest.register_chatcommand("lua_vmanip_get_param2_data", {
     description = "test vmanip class method get_param2_data (lua version)",
     func = function(self)
-        local res = true;
-        if res == nil then 
-            return true, "Success, get_param2_data() returned: nil"
+		--get voxel manip
+		local player = minetest.get_player_by_name("singleplayer");
+        local pos = player:get_pos();
+		local dir = player:get_look_dir();
+		local voxelManip = minetest.get_voxel_manip();
+		
+		--create positions
+		local pos_front = vector.round(vector.add(pos, vector.multiply(dir, 10)));
+        local pos1 = vector.subtract(pos_front, 4);
+        local pos2 = vector.add(pos_front, 5);
+
+		--read into Vmanip
+		local res1, res2 = voxelManip:read_from_map(pos1, pos2);
+		local area = VoxelArea:new{
+			MinEdge = res1,
+			MaxEdge = res2
+		}
+
+		--edit data in vmanip
+		local data = voxelManip:get_param2_data(); --original data.
+		voxelManip = nil;
+
+		--check results
+        local res = next(data) ~= nil;
+        if res then 
+            return true, "Success, get_param2_data() returned data array."
         else
-            return true, "Success, get_param2_data() returned: not nil"
+            return false, "Failure, get_param2_data() didnt return data array."
         end
     end
 })
@@ -1234,11 +1519,34 @@ minetest.register_chatcommand("lua_vmanip_get_param2_data", {
 minetest.register_chatcommand("native_vmanip_get_param2_data", {
     description = "test vmanip class method get_param2_data (native version)",
     func = function(self)
-        local res = true;
-        if res == nil then
-            return true, "Success, get_param2_data() returned: nil"
+		--get voxel manip
+		local player = minetest.get_player_by_name("singleplayer");
+        local pos = player:get_pos();
+		local dir = player:get_look_dir();
+		local voxelManip = minetest.get_voxel_manip();
+		
+		--create positions
+		local pos_front = vector.round(vector.add(pos, vector.multiply(dir, 10)));
+        local pos1 = vector.subtract(pos_front, 4);
+        local pos2 = vector.add(pos_front, 5);
+
+		--read into Vmanip
+		local res1, res2 = voxelManip:read_from_map(pos1, pos2);
+		local area = VoxelArea:new{
+			MinEdge = res1,
+			MaxEdge = res2
+		}
+
+		--edit data in vmanip
+		local data = voxelManip:native_get_param2_data(); --original data.
+		voxelManip = nil;
+
+		--check results
+        local res = next(data) ~= nil;
+        if res then 
+            return true, "Success, native_get_param2_data() returned data array."
         else
-            return true, "Success, get_param2_data() returned: not nil"
+            return false, "Failure, native_get_param2_data() didnt return data array."
         end
     end
 })
@@ -1247,9 +1555,34 @@ minetest.register_chatcommand("native_vmanip_get_param2_data", {
 minetest.register_chatcommand("test_vmanip_get_param2_data", {
     description = "compares output of lua and native command for get_param2_data()",
     func = function(self)
-        local lres = true;
-        local nres = true;
-        if lres == nres then
+		--get voxel manip
+		local player = minetest.get_player_by_name("singleplayer");
+        local pos = player:get_pos();
+		local dir = player:get_look_dir();
+		local voxelManip = minetest.get_voxel_manip();
+		
+		--create positions
+		local pos_front = vector.round(vector.add(pos, vector.multiply(dir, 10)));
+        local pos1 = vector.subtract(pos_front, 4);
+        local pos2 = vector.add(pos_front, 5);
+
+		--read into Vmanip
+		local res1, res2 = voxelManip:read_from_map(pos1, pos2);
+		local area = VoxelArea:new{
+			MinEdge = res1,
+			MaxEdge = res2
+		}
+
+		--edit data in vmanip
+		local ldata = voxelManip:get_param2_data(); --original data.
+		local ndata = voxelManip:native_get_param2_data(); --original data.
+		voxelManip = nil;
+
+		--check results
+        local lres = next(ldata) ~= nil;
+		local nres = next(ndata) ~= nil;
+        local finalRes = (lres == nres) and equals(ldata, ndata);
+        if finalRes then
             return true, "Success, function output matches - check console for more details"
         else
             return false, "Failure, function output does not match - check console for more details"
@@ -1262,11 +1595,56 @@ minetest.register_chatcommand("test_vmanip_get_param2_data", {
 minetest.register_chatcommand("lua_vmanip_set_param2_data", {
     description = "test vmanip class method set_param2_data (lua version)",
     func = function(self)
+		--get voxel manip
+		local player = minetest.get_player_by_name("singleplayer");
+        local pos = player:get_pos();
+		local dir = player:get_look_dir();
+		local voxelManip = minetest.get_voxel_manip();
+		
+		--create positions
+		local pos_front = vector.round(vector.add(pos, vector.multiply(dir, 10)));
+        local pos1 = vector.subtract(pos_front, 4);
+        local pos2 = vector.add(pos_front, 5);
+
+		--read into Vmanip
+		local res1, res2 = voxelManip:read_from_map(pos1, pos2);
+		local area = VoxelArea:new{
+			MinEdge = res1,
+			MaxEdge = res2
+		}
+
+		--edit data in vmanip
+		local data = voxelManip:get_param2_data(); --original data.
+		for z = pos1.z, pos2.z do
+			for y = pos1.y, pos2.y do
+				for x = pos1.x, pos2.x do
+					local vi = area:index(x, y, z)
+						data[vi] = 1
+				end
+			end
+		end
+
+		voxelManip:set_param2_data(data)
+		voxelManip:write_to_map(true);
+		
+		--Check results
         local res = true;
-        if res == nil then 
-            return true, "Success, set_param2_data() returned: nil"
+		data = voxelManip:get_param2_data();
+		for z = pos1.z, pos2.z do
+			for y = pos1.y, pos2.y do
+				for x = pos1.x, pos2.x do
+					local vi = area:index(x, y, z)
+						if(data[vi] ~= 1) then
+							res = false;
+						end						
+				end
+			end
+		end
+		voxelManip = nil;
+        if res then 
+            return true, "Success, set_param2_data() changed param2 data."
         else
-            return true, "Success, set_param2_data() returned: not nil"
+            return false, "Failure, set_param2_data() didnt change param2 data."
         end
     end
 })
@@ -1275,11 +1653,56 @@ minetest.register_chatcommand("lua_vmanip_set_param2_data", {
 minetest.register_chatcommand("native_vmanip_set_param2_data", {
     description = "test vmanip class method set_param2_data (native version)",
     func = function(self)
+		--get voxel manip
+		local player = minetest.get_player_by_name("singleplayer");
+        local pos = player:get_pos();
+		local dir = player:get_look_dir();
+		local voxelManip = minetest.get_voxel_manip();
+		
+		--create positions
+		local pos_front = vector.round(vector.add(pos, vector.multiply(dir, 10)));
+        local pos1 = vector.subtract(pos_front, 4);
+        local pos2 = vector.add(pos_front, 5);
+
+		--read into Vmanip
+		local res1, res2 = voxelManip:read_from_map(pos1, pos2);
+		local area = VoxelArea:new{
+			MinEdge = res1,
+			MaxEdge = res2
+		}
+
+		--edit data in vmanip
+		local data = voxelManip:get_param2_data(); --original data.
+		for z = pos1.z, pos2.z do
+			for y = pos1.y, pos2.y do
+				for x = pos1.x, pos2.x do
+					local vi = area:index(x, y, z)
+						data[vi] = 1
+				end
+			end
+		end
+
+		voxelManip:native_set_param2_data(data)
+		voxelManip:write_to_map(true);
+		
+		--Check results
         local res = true;
-        if res == nil then
-            return true, "Success, set_param2_data() returned: nil"
+		data = voxelManip:get_param2_data();
+		for z = pos1.z, pos2.z do
+			for y = pos1.y, pos2.y do
+				for x = pos1.x, pos2.x do
+					local vi = area:index(x, y, z)
+						if(data[vi] ~= 1) then
+							res = false;
+						end						
+				end
+			end
+		end
+		voxelManip = nil;
+        if res then 
+            return true, "Success, native_set_param2_data() changed param2 data."
         else
-            return true, "Success, set_param2_data() returned: not nil"
+            return false, "Failure, native_set_param2_data() didnt change param2 data."
         end
     end
 })
@@ -1288,8 +1711,80 @@ minetest.register_chatcommand("native_vmanip_set_param2_data", {
 minetest.register_chatcommand("test_vmanip_set_param2_data", {
     description = "compares output of lua and native command for set_param2_data()",
     func = function(self)
+		--get voxel manip
+		local player = minetest.get_player_by_name("singleplayer");
+        local pos = player:get_pos();
+		local dir = player:get_look_dir();
+		local voxelManip = minetest.get_voxel_manip();
+		
+		--create positions
+		local pos_front = vector.round(vector.add(pos, vector.multiply(dir, 10)));
+        local pos1 = vector.subtract(pos_front, 4);
+        local pos2 = vector.add(pos_front, 5);
+
+		--read into Vmanip
+		local res1, res2 = voxelManip:read_from_map(pos1, pos2);
+		local area = VoxelArea:new{
+			MinEdge = res1,
+			MaxEdge = res2
+		}
+
+		--edit data in vmanip (LUA)
+		local data = voxelManip:get_param2_data(); --original data.
+		for z = pos1.z, pos2.z do
+			for y = pos1.y, pos2.y do
+				for x = pos1.x, pos2.x do
+					local vi = area:index(x, y, z)
+						data[vi] = 1
+				end
+			end
+		end
+
+		voxelManip:set_param2_data(data)
+		voxelManip:write_to_map(true);
+		
+		--Check results
         local lres = true;
+		data = voxelManip:get_param2_data();
+		for z = pos1.z, pos2.z do
+			for y = pos1.y, pos2.y do
+				for x = pos1.x, pos2.x do
+					local vi = area:index(x, y, z)
+						if(data[vi] ~= 1) then
+							res = false;
+						end						
+				end
+			end
+		end
+
+		--edit data in vmanip (NATIVE)
+		local data = voxelManip:get_param2_data(); --original data.
+		for z = pos1.z, pos2.z do
+			for y = pos1.y, pos2.y do
+				for x = pos1.x, pos2.x do
+					local vi = area:index(x, y, z)
+						data[vi] = 2
+				end
+			end
+		end
+
+		voxelManip:set_param2_data(data)
+		voxelManip:write_to_map(true);
+		
+		--Check results
         local nres = true;
+		data = voxelManip:get_param2_data();
+		for z = pos1.z, pos2.z do
+			for y = pos1.y, pos2.y do
+				for x = pos1.x, pos2.x do
+					local vi = area:index(x, y, z)
+						if(data[vi] ~= 2) then
+							res = false;
+						end						
+				end
+			end
+		end
+		voxelManip = nil;
         if lres == nres then
             return true, "Success, function output matches - check console for more details"
         else
@@ -1344,16 +1839,30 @@ minetest.register_chatcommand("test_vmanip_was_modified", {
 minetest.register_chatcommand("lua_vmanip_get_emerged_area", {
     description = "test vmanip class method get_emerged_area (lua version)",
     func = function(self)
+		--get voxel manip
 		local player = minetest.get_player_by_name("singleplayer");
         local pos = player:get_pos();
+		local dir = player:get_look_dir();
 		local voxelManip = minetest.get_voxel_manip();
-		local emergedArea = minetest.emerge_area(vector.subtract(pos, 80), vector.add(pos, 80));
-		local FRes = voxelManip:get_emerged_area();
-        local res = equals(FRes, emergedArea);
-        if res == true then 
-            return true, "Success, get_emerged_area() returned: true"
+		
+		--create positions
+		local pos_front = vector.round(vector.add(pos, vector.multiply(dir, 10)));
+        local pos1 = vector.subtract(pos_front, 4);
+        local pos2 = vector.add(pos_front, 5);
+
+		--read into Vmanip
+		local res1, res2 = voxelManip:read_from_map(pos1, pos2);
+
+        -- Get area
+		local trueMin, trueMax = voxelManip:get_emerged_area();
+        voxelManip = nil;
+
+		--check results
+		local res = (equals(trueMin, res1)) and (equals(trueMax, res2));
+        if res then 
+            return true, "Success, get_emerged_area() returned valid positions."
         else
-            return false, "Failure, get_emerged_area() returned: false"
+            return false, "Failure, get_emerged_area() returned invalid positions."
         end
     end
 })
@@ -1362,11 +1871,30 @@ minetest.register_chatcommand("lua_vmanip_get_emerged_area", {
 minetest.register_chatcommand("native_vmanip_get_emerged_area", {
     description = "test vmanip class method get_emerged_area (native version)",
     func = function(self)
-        local res = true;
-        if res == nil then
-            return true, "Success, get_emerged_area() returned: nil"
+		--get voxel manip
+		local player = minetest.get_player_by_name("singleplayer");
+        local pos = player:get_pos();
+		local dir = player:get_look_dir();
+		local voxelManip = minetest.get_voxel_manip();
+		
+		--create positions
+		local pos_front = vector.round(vector.add(pos, vector.multiply(dir, 10)));
+        local pos1 = vector.subtract(pos_front, 4);
+        local pos2 = vector.add(pos_front, 5);
+
+		--read into Vmanip
+		local res1, res2 = voxelManip:read_from_map(pos1, pos2);
+
+        -- Get area
+		local trueMin, trueMax = voxelManip:native_get_emerged_area();
+        voxelManip = nil;
+
+		--check results
+		local res = (equals(trueMin, res1)) and (equals(trueMax, res2));
+        if res then 
+            return true, "Success, native_get_emerged_area() returned valid positions."
         else
-            return true, "Success, get_emerged_area() returned: not nil"
+            return false, "Failure, native_get_emerged_area() returned invalid positions."
         end
     end
 })
@@ -1375,8 +1903,28 @@ minetest.register_chatcommand("native_vmanip_get_emerged_area", {
 minetest.register_chatcommand("test_vmanip_get_emerged_area", {
     description = "compares output of lua and native command for get_emerged_area()",
     func = function(self)
-        local lres = true;
-        local nres = true;
+		--get voxel manip
+		local player = minetest.get_player_by_name("singleplayer");
+        local pos = player:get_pos();
+		local dir = player:get_look_dir();
+		local voxelManip = minetest.get_voxel_manip();
+		
+		--create positions
+		local pos_front = vector.round(vector.add(pos, vector.multiply(dir, 10)));
+        local pos1 = vector.subtract(pos_front, 4);
+        local pos2 = vector.add(pos_front, 5);
+
+		--read into Vmanip
+		local res1, res2 = voxelManip:read_from_map(pos1, pos2);
+
+        -- Get area
+		local ltrueMin, ltrueMax = voxelManip:get_emerged_area();
+		local ntrueMin, ntrueMax = voxelManip:native_get_emerged_area();
+        voxelManip = nil;
+
+		--check results
+		local lres = (equals(ltrueMin, res1)) and (equals(ltrueMax, res2));
+		local nres = (equals(ntrueMin, res1)) and (equals(ntrueMax, res2));
         if lres == nres then
             return true, "Success, function output matches - check console for more details"
         else
@@ -1416,9 +1964,7 @@ minetest.register_chatcommand("test_vmanip", {
 --TODO:
 --"calc_lighting",
 --"set_lighting",
---"get_light_data",
 --"set_light_data",
---"get_param2_data",
---"set_param2_data",
---"was_modified",
---"get_emerged_area"
+--"was_modified"
+
+--FIX UPDATE LIQUIDS TO WORK ON DEVTEST (water nodes)
