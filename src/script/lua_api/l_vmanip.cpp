@@ -152,16 +152,17 @@ int LuaVoxelManip::l_native_set_data(lua_State *L)
 	NO_MAP_LOCK_REQUIRED;
 
 	LuaVoxelManip *o = checkobject(L, 1);
-	
+	MMVManip *vm = o->vm;
+
 	if (!lua_istable(L, 2))
 		throw LuaError("VoxelManip:set_data called with missing parameter");
 
-	u32 volume = NativeLuaVoxelManip::native_set_data(o, NULL, NULL);
+	u32 volume = (u32)NativeLuaVoxelManip::native_set_data(vm, NULL, NULL);
 	for (u32 i = 0; i != volume; i++) {
 		lua_rawgeti(L, 2, i + 1);
 		content_t c = lua_tointeger(L, -1);
 
-		NativeLuaVoxelManip::native_set_data(o, i, c);
+		NativeLuaVoxelManip::native_set_data(vm, i, c);
 
 		lua_pop(L, 1);
 	}
@@ -415,31 +416,31 @@ int LuaVoxelManip::l_native_set_lighting(lua_State *L)
 	NO_MAP_LOCK_REQUIRED;
 
 	LuaVoxelManip *o = checkobject(L, 1);
-	v3s16 pmin = v3s16(INT_MIN, INT_MIN, INT_MIN);
-	v3s16 pmax = v3s16(INT_MIN, INT_MIN, INT_MIN);
-	Mapgen *mg = nullptr;
-	u8 light;
+	if (!o->is_mapgen_vm) {
+		warningstream << "VoxelManip:set_lighting called for a non-mapgen "
+			"VoxelManip object" << std::endl;
+		return 0;
+	}
 
-	NativeLuaVoxelManip::native_set_lighting(o, pmin, pmax, mg, light);
-	
 	if (!lua_istable(L, 2))
 		throw LuaError("VoxelManip:set_lighting called with missing parameter");
-
 	
+	u8 light;
 	light = (getintfield_default(L, 2, "day", 0) & 0x0F);
 	light |= (getintfield_default(L, 2, "night", 0) & 0x0F) << 4;
-
+	
 	MMVManip *vm = o->vm;
 
-	pmin = lua_istable(L, 3) ? check_v3s16(L, 3) : vm->m_area.MinEdge + (v3s16(0, 1, 0) * MAP_BLOCKSIZE);
-	pmax = lua_istable(L, 4) ? check_v3s16(L, 4) : vm->m_area.MaxEdge - (v3s16(0, 1, 0) * MAP_BLOCKSIZE);
+	v3s16 pmin = lua_istable(L, 3) ? check_v3s16(L, 3) : vm->m_area.MinEdge + (v3s16(0, 1, 0) * MAP_BLOCKSIZE);
+	v3s16 pmax = lua_istable(L, 4) ? check_v3s16(L, 4) : vm->m_area.MaxEdge - (v3s16(0, 1, 0) * MAP_BLOCKSIZE);
 
-	NativeLuaVoxelManip::native_set_lighting(o, pmin, pmax, mg, light);
-	if (!vm->m_area.contains(VoxelArea(pmin, pmax)))
+	int res = NativeLuaVoxelManip::native_set_lighting(vm, pmin, pmax, light, 1);
+	if (res == -1)
 		throw LuaError("Specified voxel area out of VoxelManipulator bounds");
-
-	mg->vm = vm;
-	NativeLuaVoxelManip::native_set_lighting(o, pmin, pmax, mg, light);
+	
+	Mapgen mg;
+	mg.vm = vm;
+	NativeLuaVoxelManip::native_set_lighting(vm, pmin, pmax, light, 2, &mg);
 
 	return 0;
 }

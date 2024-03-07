@@ -530,7 +530,7 @@ minetest.register_chatcommand("native_vmanip_write_to_map", {
 		local voxelManip = minetest.get_voxel_manip();
 		
 		--create positions
-		local pos_front = vector.round(vector.add(pos, vector.multiply(dir, 10)));
+		local pos_front = vector.round(vector.add(pos, vector.multiply(dir, 20)));
         local pos1 = vector.subtract(pos_front, 4);
         local pos2 = vector.add(pos_front, 5);
 
@@ -585,7 +585,7 @@ minetest.register_chatcommand("test_vmanip_write_to_map", {
 
 		--DIRT CUBE (LUA)
         -- Calculate positions
-        local pos_front_dirt = vector.round(vector.add(pos, vector.multiply(dir, 10)))
+        local pos_front_dirt = vector.round(vector.add(pos, vector.multiply(dir, 30)))
         local pos1_dirt = vector.subtract(pos_front_dirt, 4)
         local pos2_dirt = vector.add(pos_front_dirt, 5)
 
@@ -616,6 +616,7 @@ minetest.register_chatcommand("test_vmanip_write_to_map", {
 
 		--STONE CUBE (NATIVE)
         --Calculate positions
+		pos_front_dirt = vector.round(vector.add(pos, vector.multiply(dir, 40)))
         local pos1_stone = vector.add(pos2_dirt, 1) 
         local pos2_stone = vector.add(pos1_stone, 9) 
         pos1_stone.y = pos1_dirt.y
@@ -999,7 +1000,7 @@ minetest.register_chatcommand("lua_vmanip_update_liquids", {
                 minetest.chat_send_player("singleplayer", "Failure, update_liquids() didn't update flow of liquids.")
             end
         end)
-		return true; --return for test result (actual result depends on printed statement from above).
+		return true, "Check chat for result:"; --return for test result (actual result depends on printed statement from above).
     end
 })
 
@@ -1063,7 +1064,7 @@ minetest.register_chatcommand("native_vmanip_update_liquids", {
                 minetest.chat_send_player("singleplayer", "Failure, native_update_liquids() didn't update flow of liquids.")
             end
         end)
-		return true; --return for test result (actual result depends on printed statement from above).
+		return true, "Check chat for result:"; --return for test result (actual result depends on printed statement from above).
     end
 })
 
@@ -1167,7 +1168,7 @@ minetest.register_chatcommand("test_vmanip_update_liquids", {
                 minetest.chat_send_player("singleplayer", "Failure, function output does not match - check console for more details.")
             end
         end)
-		return true; --return for test result (actual result depends on printed statement from above).
+		return true, "Check chat for result:"; --return for test result (actual result depends on printed statement from above).
     end
 })
 
@@ -1257,7 +1258,7 @@ minetest.register_chatcommand("lua_vmanip_calc_lighting", {
     description = "test vmanip class method calc_lighting (lua version)",
     func = function(self)
 		enableLua = true;
-		return true;
+		return true, "Check chat for result:";
     end
 })
 
@@ -1266,7 +1267,7 @@ minetest.register_chatcommand("native_vmanip_calc_lighting", {
     description = "test vmanip class method calc_lighting (native version)",
     func = function(self)
         enableNative = true;
-		return true;
+		return true, "Check chat for result:";
     end
 })
 
@@ -1276,7 +1277,7 @@ minetest.register_chatcommand("test_vmanip_calc_lighting", {
     func = function(self)
         enableLua = true;
 		enableNative = true;
-		return true;
+		return true, "Check chat for result:";
     end
 })
 
@@ -1286,7 +1287,7 @@ minetest.register_chatcommand("stop_vmanip_calc_lighting", {
     func = function(self)
         enableLua = false;
 		enableNative = false;
-		return true;
+		return true, "Check chat for result:";
     end
 })
 
@@ -1365,7 +1366,7 @@ minetest.register_chatcommand("lua_vmanip_set_lighting", {
     description = "test vmanip class method set_lighting (lua version).",
     func = function(self)
 		enableLuaSet = true;
-		return true;
+		return true, "Check chat for result:";
     end
 })
 
@@ -1374,7 +1375,7 @@ minetest.register_chatcommand("native_vmanip_set_lighting", {
     description = "test vmanip class method set_lighting (native version).",
     func = function(self)
         enableNativeSet = true;
-		return true;
+		return true, "Check chat for result:";
     end
 })
 
@@ -1384,7 +1385,7 @@ minetest.register_chatcommand("test_vmanip_set_lighting", {
     func = function(self)
         enableLuaSet = true;
 		enableNativeSet = true;
-		return true;
+		return true, "Check chat for result:";
     end
 })
 
@@ -1394,7 +1395,7 @@ minetest.register_chatcommand("stop_vmanip_set_lighting", {
     func = function(self)
         enableLuaSet = false;
 		enableNativeSet = false;
-		return true;
+		return true, "Check chat for result:";
     end
 })
 
@@ -2119,7 +2120,7 @@ minetest.register_chatcommand("lua_vmanip_was_modified", {
     description = "test vmanip class method was_modified (lua version)",
 	func = function(self)
 		enableLuaModified = true;
-		return modify;
+		return modify, "Check chat for result:";
 	end
 })
 
@@ -2129,7 +2130,7 @@ minetest.register_chatcommand("native_vmanip_was_modified", {
     description = "test vmanip class method was_modified (native version)",
     func = function(self)
 		enableNativeModified = true;
-		return modify;
+		return modify, "Check chat for result:";
     end
 })
 
@@ -2139,7 +2140,7 @@ minetest.register_chatcommand("test_vmanip_was_modified", {
     func = function(self)
 		enableLuaModified = true;
 		enableNativeModified = true;
-		return modify;
+		return modify, "Check chat for result:";
     end
 })
 
@@ -2149,7 +2150,7 @@ minetest.register_chatcommand("stop_vmanip_was_modified", {
     func = function(self)
 		enableLuaModified = false;
 		enableNativeModified = false;
-		return modify;
+		return modify, "Check chat for result:";
     end
 })
 

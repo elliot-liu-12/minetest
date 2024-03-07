@@ -30,7 +30,7 @@ private:
 	static MMVManip* native_read_from_map(v3s16 a, v3s16 b, MMVManip *vm);
 	
 	static u32 native_get_data(LuaVoxelManip *o);
-	static u32 native_set_data(LuaVoxelManip *o, u32 i, content_t c);
+	static u32 native_set_data(MMVManip *vm, u32 i, content_t c);
 	static int native_write_to_map(LuaVoxelManip *o, bool update_light, ServerEnvironment *env);
 
 	static MapNode native_get_node_at(LuaVoxelManip *o, v3s16 pos);
@@ -40,7 +40,7 @@ private:
 	static int native_update_liquids(LuaVoxelManip *o, const NodeDefManager *ndef, Map *map, Mapgen *mg);
 
 	static v3s16 native_calc_lighting(LuaVoxelManip *o, std::string x, v3s16 pmin, v3s16 pmax, Mapgen *mg, bool propagate_shadow);
-	static int native_set_lighting(LuaVoxelManip *o, v3s16 pmin, v3s16 pmax, Mapgen *mg, u8 light);
+	static int native_set_lighting(MMVManip *vm, v3s16 pmin, v3s16 pmax, u8 light, int x, Mapgen *mg = nullptr);
 	static u32 NativeLuaVoxelManip::native_get_light_data(LuaVoxelManip *o);
 	static u32 NativeLuaVoxelManip::native_set_light_data(LuaVoxelManip *o, u32 i, u8 light);
 

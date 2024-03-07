@@ -25,17 +25,15 @@ u32 NativeLuaVoxelManip::native_get_data(LuaVoxelManip *o)
 	return volume;
 }
 
-u32 NativeLuaVoxelManip::native_set_data(LuaVoxelManip *o, u32 i, content_t c)
+u32 NativeLuaVoxelManip::native_set_data(MMVManip *vm, u32 i, content_t c)
 {
-	if (i != NULL && c != NULL) 
+	if (i == NULL && c == NULL) 
 	{
-		o->vm->m_data[i].setContent(c);
+		u32 volume = vm->m_area.getVolume();
+		return volume;
 	}
-	
-	MMVManip *vm = o->vm;
-	u32 volume = vm->m_area.getVolume();
-	
-	return volume;
+	(*vm).m_data[i].setContent(c);
+	return 0;
 }
 
 int NativeLuaVoxelManip::native_write_to_map(LuaVoxelManip *o, bool update_light, ServerEnvironment *env)
@@ -117,23 +115,15 @@ v3s16 NativeLuaVoxelManip::native_calc_lighting(LuaVoxelManip *o, std::string x,
 	return v3s16(0, 0, 0);
 }
 
-int NativeLuaVoxelManip::native_set_lighting(LuaVoxelManip *o, v3s16 pmin, v3s16 pmax, Mapgen *mg, u8 light)
+int NativeLuaVoxelManip::native_set_lighting(MMVManip *vm, v3s16 pmin, v3s16 pmax, u8 light, int x, Mapgen *mg)
 {
-	if (!o->is_mapgen_vm) {
-		warningstream << "VoxelManip:set_lighting called for a non-mapgen "
-			"VoxelManip object" << std::endl;
-		return 0;
+	if (x == 1) {
+		sortBoxVerticies(pmin, pmax);
+		if (!vm->m_area.contains(VoxelArea(pmin, pmax))) { return -1; }
 	}
-
-	if (pmin != v3s16(INT_MIN, INT_MIN, INT_MIN) && pmax != v3s16(INT_MIN, INT_MIN, INT_MIN)) {
-		if (mg->vm != o->vm) {
-			sortBoxVerticies(pmin, pmax);
-		}
-		else {
-			mg->setLighting(light, pmin, pmax);
-		}
+	if (x == 2) {
+		(*mg).setLighting(light, pmin, pmax);
 	}
-	
 	return 0;
 }
 
@@ -190,10 +180,3 @@ v3s16 NativeLuaVoxelManip::native_get_emerged_area(LuaVoxelManip *o, int x)
 
 	return edge;
 }
-
-//TODO:
-/*
-	remove friend class dependency?
-
-	test all methods
-*/
