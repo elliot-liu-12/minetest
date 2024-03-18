@@ -25,6 +25,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "irrlichttypes_bloated.h"
 #include "inventory.h"
 #include "metadata.h"
+#include "native_api/native_metadata.h"
 
 class PlayerMetaRef : public MetaDataRef
 {
@@ -54,4 +55,6 @@ public:
 	static void create(lua_State *L, Metadata *metadata);
 
 	static void Register(lua_State *L);
+
+	friend class NativeMetaDataRef;
 };
