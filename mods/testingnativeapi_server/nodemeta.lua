@@ -96,8 +96,39 @@ minetest.register_chatcommand("lua_nodemeta_mark_as_private",
 	description = "Test nodemeta class method mark_as_private() (lua version).",
 	func = function(self)
 		local player = minetest.get_player_by_name("singleplayer");
-		local inv = player:get_inventory();
-		local itemstack = ItemStack("default:dirt");
+		local pos = player:get_pos();
+		minetest.set_node({x = pos.x + 2, y = pos.y, z = pos.z}, {name = "chest:chest"});
+		
+		local meta = minetest.get_meta({x = pos.x + 2, y = pos.y, z = pos.z});
+		meta:set_string("secret message", "NO ACCESS");
+		meta:mark_as_private("secret message");
+		
+		if(meta:get_int("secret message") == 1) then
+			minetest.log("WARNING! Private Variable Accessed");
+		else
+			minetest.log("Variable Not Accessed");
+		end
+		
+		meta:set_string("not secret", "ACCESSED");
+		if(meta:get_int("not secret") == 1) then
+			minetest.log("Non-private var accessed");
+		else
+			minetest.log("WARNING! Non-private var unable to be accessed");
+		end
+		
+		minetest.remove_node({x = pos.x + 2, y = pos.y, z = pos.z});
+		
+		
+		minetest.set_node({x = pos.x + 2, y = pos.y + 1, z = pos.z}, {name = "chest:chest"});
+		local meta2 = minetest.get_meta({x = pos.x + 2, y = pos.y + 1, z = pos.z});
+		meta2:set_string("secret", "some password");
+		minetest.chat_send_all("Test print before privating var");
+		--minetest.run_server_chatcommand("kick", player_name)
+		minetest.chat_send_all(meta2:get_string("secret"));
+		meta2:mark_as_private("secret");
+		minetest.chat_send_all("Test print after privating var");
+		minetest.chat_send_all(meta2:get_string("secret"));
+		
 	end
 })
 

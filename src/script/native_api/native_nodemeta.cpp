@@ -9,12 +9,8 @@
 #include "native_nodemeta.h"
 
 void nativeModApiNodemeta::n_get_inventory(NodeMetaRef* ref)
-{
-	//ref->NodeMetaRef::getmeta(true);
-	std::cout << "This runs" << std::endl;
-	
+{	
 	ref->getmeta(true);
-	std::cout << "After ref->getmeta(true) runs" << std::endl;
 }
 
 NodeMetadata* nativeModApiNodemeta::n_mark_as_private(NodeMetadata *meta, NodeMetaRef* ref, int flag)

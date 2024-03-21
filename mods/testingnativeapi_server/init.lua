@@ -23,6 +23,7 @@ dofile(modpath .. "/itemstackmeta.lua")
 dofile(modpath .. "/metadata.lua")
 
 dofile(modpath .. "/nodemeta.lua")
+dofile(modpath .. "/util.lua")
 
 -- Load helper files
 dofile(modpath .. "/other.lua")

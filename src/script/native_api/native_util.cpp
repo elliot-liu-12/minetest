@@ -183,7 +183,7 @@ bool nativeModApiUtil::n_util_get_version()
 	return strcmp(g_version_string, g_version_hash) != 0;
 }
 
-void nativeModApiUtil::n_util_sha1(const char *data, size_t size, std::string data_sha1)
+void nativeModApiUtil::n_util_sha1(const char *data, size_t size, std::string& data_sha1)
 {
 	{
 		SHA1 ctx;

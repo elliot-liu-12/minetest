@@ -32,5 +32,5 @@ public:
 	static std::string nativeModApiUtil::n_util_encode_base64(const char *data, size_t size);
 	static int nativeModApiUtil::n_util_decode_base64(const char *d, size_t size, std::string& out);
 	static bool nativeModApiUtil::n_util_get_version();
-	static void nativeModApiUtil::n_util_sha1(const char *data, size_t size, std::string data_sha1);
+	static void nativeModApiUtil::n_util_sha1(const char *data, size_t size, std::string& data_sha1);
 };

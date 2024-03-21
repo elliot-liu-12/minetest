@@ -16,7 +16,8 @@ minetest.register_chatcommand("test_server_classes", {
 			"itemstackmeta",
 			"metadata",
 			
-			"nodemeta"
+			"nodemeta",
+			"util"
 		}
 
 		native_tests.clear_file();
