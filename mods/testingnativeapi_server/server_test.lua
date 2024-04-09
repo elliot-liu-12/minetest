@@ -15,7 +15,8 @@ minetest.register_chatcommand("test_server_classes", {
 			"settings",
 			"itemstackmeta",
 			"metadata",
-			"vmanip"
+			"vmanip",
+			"rollback"
 		}
 
 		native_tests.clear_file();
