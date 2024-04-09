@@ -22,6 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <map>
 #include "irr_v3d.h"
 #include "lua_api/l_base.h"
+#include "native_api/native_vmanip.h"
 
 class Map;
 class MapBlock;
@@ -63,6 +64,29 @@ private:
 	static int l_was_modified(lua_State *L);
 	static int l_get_emerged_area(lua_State *L);
 
+	//Native versions
+	static int l_native_read_from_map(lua_State *L);
+	static int l_native_get_data(lua_State *L);
+	static int l_native_set_data(lua_State *L);
+	static int l_native_write_to_map(lua_State *L);
+
+	static int l_native_get_node_at(lua_State *L);
+	static int l_native_set_node_at(lua_State *L);
+
+	static int l_native_update_map(lua_State *L);
+	static int l_native_update_liquids(lua_State *L);
+
+	static int l_native_calc_lighting(lua_State *L);
+	static int l_native_set_lighting(lua_State *L);
+	static int l_native_get_light_data(lua_State *L);
+	static int l_native_set_light_data(lua_State *L);
+
+	static int l_native_get_param2_data(lua_State *L);
+	static int l_native_set_param2_data(lua_State *L);
+
+	static int l_native_was_modified(lua_State *L);
+	static int l_native_get_emerged_area(lua_State *L);
+	
 public:
 	MMVManip *vm = nullptr;
 
@@ -78,4 +102,6 @@ public:
 	static LuaVoxelManip *checkobject(lua_State *L, int narg);
 
 	static void Register(lua_State *L);
+
+	friend class NativeLuaVoxelManip;
 };
