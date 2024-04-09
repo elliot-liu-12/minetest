@@ -13,6 +13,7 @@ set(common_SCRIPT_NATIVE_API_SRCS
 	${CMAKE_CURRENT_SOURCE_DIR}/native_vmanip.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/native_playermeta.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/native_rollback.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/native_nodemeta.cpp
 	PARENT_SCOPE)
 
 set(client_SCRIPT_NATIVE_API_SRCS

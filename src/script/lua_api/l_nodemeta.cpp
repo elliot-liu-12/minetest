@@ -26,6 +26,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "mapblock.h"
 #include "server.h"
 
+#include "../native_api/native_nodemeta.h"
+
 /*
 	NodeMetaRef
 */
@@ -92,6 +94,19 @@ int NodeMetaRef::l_get_inventory(lua_State *L)
 	return 1;
 }
 
+int NodeMetaRef::l_native_get_inventory(lua_State* L)
+{
+	MAP_LOCK_REQUIRED;
+
+	NodeMetaRef *ref = checkobject(L, 1);
+
+	// call native function
+	nativeModApiNodemeta::n_get_inventory(ref);
+
+	InvRef::createNodeMeta(L, ref->m_p);
+	return 1;
+}
+
 // mark_as_private(self, <string> or {<string>, <string>, ...})
 int NodeMetaRef::l_mark_as_private(lua_State *L)
 {
@@ -114,6 +129,33 @@ int NodeMetaRef::l_mark_as_private(lua_State *L)
 		meta->markPrivate(readParam<std::string>(L, 2), true);
 	}
 	ref->reportMetadataChange();
+
+	return 0;
+}
+
+int NodeMetaRef::l_native_mark_as_private(lua_State* L)
+{
+	MAP_LOCK_REQUIRED;
+
+	NodeMetaRef *ref = checkobject(L, 1);
+
+	// call native function for first bit of code
+	NodeMetadata *meta;
+	nativeModApiNodemeta::n_mark_as_private(meta, ref, 0);
+	if (lua_istable(L, 2)) {
+		lua_pushnil(L);
+		while (lua_next(L, 2) != 0) {
+			// key at index -2 and value at index -1
+			luaL_checktype(L, -1, LUA_TSTRING);
+			meta->markPrivate(readParam<std::string>(L, -1), true);
+			// removes value, keeps key for next iteration
+			lua_pop(L, 1);
+		}
+	} else if (lua_isstring(L, 2)) {
+		meta->markPrivate(readParam<std::string>(L, 2), true);
+	}
+	// call again for second part
+	nativeModApiNodemeta::n_mark_as_private(meta, ref, 1);
 
 	return 0;
 }
@@ -250,7 +292,9 @@ const luaL_Reg NodeMetaRef::methodsServer[] = {
 	luamethod(MetaDataRef, to_table),
 	luamethod(MetaDataRef, from_table),
 	luamethod(NodeMetaRef, get_inventory),
+	luamethod(NodeMetaRef, native_get_inventory),
 	luamethod(NodeMetaRef, mark_as_private),
+	luamethod(NodeMetaRef, native_mark_as_private),
 	luamethod(MetaDataRef, equals),
 	{0,0}
 };
