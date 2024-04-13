@@ -29,6 +29,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "log.h"
 #include <algorithm>
 
+#include "../native_api/native_server.h"
+
 // request_shutdown()
 int ModApiServer::l_request_shutdown(lua_State *L)
 {
@@ -40,11 +42,28 @@ int ModApiServer::l_request_shutdown(lua_State *L)
 	return 0;
 }
 
+int ModApiServer::l_native_request_shutdown(lua_State* L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	const char *msg = lua_tolstring(L, 1, NULL);
+	bool reconnect = readParam<bool>(L, 2);
+	float seconds_before_shutdown = lua_tonumber(L, 3);
+	nativeModApiServer::n_server_request_shutdown(getServer(L), msg ? msg : "", reconnect, seconds_before_shutdown);
+	return 0;
+}
+
 // get_server_status()
 int ModApiServer::l_get_server_status(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
 	lua_pushstring(L, getServer(L)->getStatusString().c_str());
+	return 1;
+}
+
+int ModApiServer::l_native_get_server_status(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	lua_pushstring(L, nativeModApiServer::n_server_get_server_status(getServer(L)).c_str());
 	return 1;
 }
 
@@ -56,6 +75,12 @@ int ModApiServer::l_get_server_uptime(lua_State *L)
 	return 1;
 }
 
+int ModApiServer::l_native_get_server_uptime(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	lua_pushnumber(L, nativeModApiServer::n_server_get_server_uptime(getServer(L)));
+	return 1;
+}
 
 // print(text)
 int ModApiServer::l_print(lua_State *L)
@@ -64,6 +89,15 @@ int ModApiServer::l_print(lua_State *L)
 	std::string text;
 	text = luaL_checkstring(L, 1);
 	getServer(L)->printToConsoleOnly(text);
+	return 0;
+}
+
+int ModApiServer::l_native_print(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	std::string text;
+	text = luaL_checkstring(L, 1);
+	nativeModApiServer::n_server_print(getServer(L), text);
 	return 0;
 }
 
@@ -76,6 +110,17 @@ int ModApiServer::l_chat_send_all(lua_State *L)
 	Server *server = getServer(L);
 	// Send
 	server->notifyPlayers(utf8_to_wide(text));
+	return 0;
+}
+
+int ModApiServer::l_native_chat_send_all(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	const char *text = luaL_checkstring(L, 1);
+	// Get server from registry
+	Server *server = getServer(L);
+	// Send
+	nativeModApiServer::n_server_chat_send_all(server, text);
 	return 0;
 }
 
@@ -93,6 +138,19 @@ int ModApiServer::l_chat_send_player(lua_State *L)
 	return 0;
 }
 
+int ModApiServer::l_native_chat_send_player(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	const char *name = luaL_checkstring(L, 1);
+	const char *text = luaL_checkstring(L, 2);
+
+	// Get server from registry
+	Server *server = getServer(L);
+	// Send
+	nativeModApiServer::n_server_chat_send_player(server, name, text);
+	return 0;
+}
+
 // get_player_privs(name, text)
 int ModApiServer::l_get_player_privs(lua_State *L)
 {
@@ -104,6 +162,24 @@ int ModApiServer::l_get_player_privs(lua_State *L)
 	lua_newtable(L);
 	int table = lua_gettop(L);
 	std::set<std::string> privs_s = server->getPlayerEffectivePrivs(name);
+	for (const std::string &privs_ : privs_s) {
+		lua_pushboolean(L, true);
+		lua_setfield(L, table, privs_.c_str());
+	}
+	lua_pushvalue(L, table);
+	return 1;
+}
+
+int ModApiServer::l_native_get_player_privs(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	const char *name = luaL_checkstring(L, 1);
+	// Get server from registry
+	Server *server = getServer(L);
+	// Do it
+	lua_newtable(L);
+	int table = lua_gettop(L);
+	std::set<std::string> privs_s = nativeModApiServer::n_server_get_player_privs(server, name);
 	for (const std::string &privs_ : privs_s) {
 		lua_pushboolean(L, true);
 		lua_setfield(L, table, privs_.c_str());
@@ -127,6 +203,25 @@ int ModApiServer::l_get_player_ip(lua_State *L)
 	}
 
 	lua_pushstring(L, server->getPeerAddress(player->getPeerId()).serializeString().c_str());
+	return 1;
+}
+
+int ModApiServer::l_native_get_player_ip(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+
+	Server *server = getServer(L);
+
+	const char *name = luaL_checkstring(L, 1);
+	RemotePlayer *player = nativeModApiServer::n_server_get_player_ip(server, name);
+	if (!player) {
+		lua_pushnil(L); // no such player
+		return 1;
+	}
+
+	lua_pushstring(L, server->getPeerAddress(player->getPeerId())
+					  .serializeString()
+					  .c_str());
 	return 1;
 }
 
@@ -259,11 +354,145 @@ int ModApiServer::l_get_player_information(lua_State *L)
 	return 1;
 }
 
+int ModApiServer::l_native_get_player_information(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+
+	Server *server = getServer(L);
+
+	const char *name = luaL_checkstring(L, 1);
+	RemotePlayer *player = nativeModApiServer::n_server_get_player_information(server, name);
+	if (!player) {
+		lua_pushnil(L); // no such player
+		return 1;
+	}
+
+	/*
+		Be careful not to introduce a depdendency on the connection to
+		the peer here. This function is >>REQUIRED<< to still be able to return
+		values even when the peer unexpectedly disappears.
+		Hence all the ConInfo values here are optional.
+	*/
+
+	auto getConInfo = [&](con::rtt_stat_type type, float *value) -> bool {
+		return server->getClientConInfo(player->getPeerId(), type, value);
+	};
+
+	float min_rtt, max_rtt, avg_rtt, min_jitter, max_jitter, avg_jitter;
+	bool have_con_info = getConInfo(con::MIN_RTT, &min_rtt) &&
+			     getConInfo(con::MAX_RTT, &max_rtt) &&
+			     getConInfo(con::AVG_RTT, &avg_rtt) &&
+			     getConInfo(con::MIN_JITTER, &min_jitter) &&
+			     getConInfo(con::MAX_JITTER, &max_jitter) &&
+			     getConInfo(con::AVG_JITTER, &avg_jitter);
+
+	ClientInfo info;
+	if (!server->getClientInfo(player->getPeerId(), info)) {
+		warningstream << FUNCTION_NAME << ": no client info?!" << std::endl;
+		lua_pushnil(L); // error
+		return 1;
+	}
+
+	lua_newtable(L);
+	int table = lua_gettop(L);
+
+	lua_pushstring(L, "address");
+	lua_pushstring(L, info.addr.serializeString().c_str());
+	lua_settable(L, table);
+
+	lua_pushstring(L, "ip_version");
+	if (info.addr.getFamily() == AF_INET) {
+		lua_pushnumber(L, 4);
+	} else if (info.addr.getFamily() == AF_INET6) {
+		lua_pushnumber(L, 6);
+	} else {
+		lua_pushnumber(L, 0);
+	}
+	lua_settable(L, table);
+
+	if (have_con_info) { // may be missing
+		lua_pushstring(L, "min_rtt");
+		lua_pushnumber(L, min_rtt);
+		lua_settable(L, table);
+
+		lua_pushstring(L, "max_rtt");
+		lua_pushnumber(L, max_rtt);
+		lua_settable(L, table);
+
+		lua_pushstring(L, "avg_rtt");
+		lua_pushnumber(L, avg_rtt);
+		lua_settable(L, table);
+
+		lua_pushstring(L, "min_jitter");
+		lua_pushnumber(L, min_jitter);
+		lua_settable(L, table);
+
+		lua_pushstring(L, "max_jitter");
+		lua_pushnumber(L, max_jitter);
+		lua_settable(L, table);
+
+		lua_pushstring(L, "avg_jitter");
+		lua_pushnumber(L, avg_jitter);
+		lua_settable(L, table);
+	}
+
+	lua_pushstring(L, "connection_uptime");
+	lua_pushnumber(L, info.uptime);
+	lua_settable(L, table);
+
+	lua_pushstring(L, "protocol_version");
+	lua_pushnumber(L, info.prot_vers);
+	lua_settable(L, table);
+
+	lua_pushstring(L, "formspec_version");
+	lua_pushnumber(L, player->formspec_version);
+	lua_settable(L, table);
+
+	lua_pushstring(L, "lang_code");
+	lua_pushstring(L, info.lang_code.c_str());
+	lua_settable(L, table);
+
+#ifndef NDEBUG
+	lua_pushstring(L, "serialization_version");
+	lua_pushnumber(L, info.ser_vers);
+	lua_settable(L, table);
+
+	lua_pushstring(L, "major");
+	lua_pushnumber(L, info.major);
+	lua_settable(L, table);
+
+	lua_pushstring(L, "minor");
+	lua_pushnumber(L, info.minor);
+	lua_settable(L, table);
+
+	lua_pushstring(L, "patch");
+	lua_pushnumber(L, info.patch);
+	lua_settable(L, table);
+
+	lua_pushstring(L, "version_string");
+	lua_pushstring(L, info.vers_string.c_str());
+	lua_settable(L, table);
+
+	lua_pushstring(L, "state");
+	lua_pushstring(L, ClientInterface::state2Name(info.state).c_str());
+	lua_settable(L, table);
+#endif
+
+	return 1;
+}
+
 // get_ban_list()
 int ModApiServer::l_get_ban_list(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
 	lua_pushstring(L, getServer(L)->getBanDescription("").c_str());
+	return 1;
+}
+
+int ModApiServer::l_native_get_ban_list(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	lua_pushstring(L, nativeModApiServer::n_server_get_ban_list(getServer(L)).c_str());
 	return 1;
 }
 
@@ -273,6 +502,14 @@ int ModApiServer::l_get_ban_description(lua_State *L)
 	NO_MAP_LOCK_REQUIRED;
 	const char * ip_or_name = luaL_checkstring(L, 1);
 	lua_pushstring(L, getServer(L)->getBanDescription(std::string(ip_or_name)).c_str());
+	return 1;
+}
+
+int ModApiServer::l_native_get_ban_description(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	const char *ip_or_name = luaL_checkstring(L, 1);
+	lua_pushstring(L, nativeModApiServer::n_server_get_ban_description(getServer(L), std::string(ip_or_name)).c_str());
 	return 1;
 }
 
@@ -291,6 +528,26 @@ int ModApiServer::l_ban_player(lua_State *L)
 	}
 
 	std::string ip_str = server->getPeerAddress(player->getPeerId()).serializeString();
+	server->setIpBanned(ip_str, name);
+	lua_pushboolean(L, true);
+	return 1;
+}
+
+int ModApiServer::l_native_ban_player(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+
+	Server *server = getServer(L);
+
+	const char *name = luaL_checkstring(L, 1);
+	RemotePlayer *player = nativeModApiServer::n_server_ban_player(server, name);
+	if (!player) {
+		lua_pushboolean(L, false); // no such player
+		return 1;
+	}
+
+	std::string ip_str =
+			server->getPeerAddress(player->getPeerId()).serializeString();
 	server->setIpBanned(ip_str, name);
 	lua_pushboolean(L, true);
 	return 1;
@@ -317,6 +574,27 @@ int ModApiServer::l_kick_player(lua_State *L)
 	return 1;
 }
 
+int ModApiServer::l_native_kick_player(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	const char *name = luaL_checkstring(L, 1);
+	std::string message("Kicked");
+	if (lua_isstring(L, 2))
+		message.append(": ").append(readParam<std::string>(L, 2));
+	else
+		message.append(".");
+
+	RemotePlayer *player =
+			dynamic_cast<ServerEnvironment *>(getEnv(L))->getPlayer(name);
+	if (player == NULL) {
+		lua_pushboolean(L, false); // No such player
+		return 1;
+	}
+	nativeModApiServer::n_server_kick_player(getServer(L), player->getPeerId(), message);
+	lua_pushboolean(L, true);
+	return 1;
+}
+
 int ModApiServer::l_remove_player(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
@@ -333,12 +611,37 @@ int ModApiServer::l_remove_player(lua_State *L)
 	return 1;
 }
 
+int ModApiServer::l_native_remove_player(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	std::string name = luaL_checkstring(L, 1);
+	ServerEnvironment *s_env = dynamic_cast<ServerEnvironment *>(getEnv(L));
+	assert(s_env);
+
+	RemotePlayer *player = nativeModApiServer::n_server_remove_player(s_env, name);
+	if (!player)
+		lua_pushinteger(L, s_env->removePlayerFromDatabase(name) ? 0 : 1);
+	else
+		lua_pushinteger(L, 2);
+
+	return 1;
+}
+
 // unban_player_or_ip()
 int ModApiServer::l_unban_player_or_ip(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
 	const char * ip_or_name = luaL_checkstring(L, 1);
 	getServer(L)->unsetIpBanned(ip_or_name);
+	lua_pushboolean(L, true);
+	return 1;
+}
+
+int ModApiServer::l_native_unban_player_or_ip(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	const char *ip_or_name = luaL_checkstring(L, 1);
+	nativeModApiServer::n_server_unban_player_or_ip(getServer(L), ip_or_name);
 	lua_pushboolean(L, true);
 	return 1;
 }
