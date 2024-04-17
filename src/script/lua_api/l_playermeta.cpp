@@ -118,6 +118,17 @@ const luaL_Reg PlayerMetaRef::methods[] = {
 	luamethod(MetaDataRef, to_table),
 	luamethod(MetaDataRef, from_table),
 	luamethod(MetaDataRef, equals),
+	luamethod(MetaDataRef, native_contains),
+	luamethod(MetaDataRef, native_get),
+	luamethod(MetaDataRef, native_get_string),
+	luamethod(MetaDataRef, native_set_string),
+	luamethod(MetaDataRef, native_get_int),
+	luamethod(MetaDataRef, native_set_int),
+	luamethod(MetaDataRef, native_get_float),
+	luamethod(MetaDataRef, native_set_float),
+	luamethod(MetaDataRef, native_to_table),
+	luamethod(MetaDataRef, native_from_table),
+	luamethod(MetaDataRef, native_equals),
 	{0,0}
 };
 // clang-format on

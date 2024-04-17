@@ -8,13 +8,16 @@ set(common_SCRIPT_NATIVE_API_SRCS
 	${CMAKE_CURRENT_SOURCE_DIR}/native_settings.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/native_nodetimer.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/native_modchannels.cpp
-
 	${CMAKE_CURRENT_SOURCE_DIR}/native_itemstackmeta.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/native_metadata.cpp
-	
+	${CMAKE_CURRENT_SOURCE_DIR}/native_vmanip.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/native_playermeta.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/native_rollback.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/native_nodemeta.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/native_util.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/native_server.cpp
+  
+
 	PARENT_SCOPE)
 
 set(client_SCRIPT_NATIVE_API_SRCS
