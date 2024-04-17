@@ -584,13 +584,13 @@ int ModApiServer::l_native_kick_player(lua_State *L)
 	else
 		message.append(".");
 
-	RemotePlayer *player =
-			dynamic_cast<ServerEnvironment *>(getEnv(L))->getPlayer(name);
+	RemotePlayer *player = dynamic_cast<ServerEnvironment *>(getEnv(L))->getPlayer(name);
 	if (player == NULL) {
 		lua_pushboolean(L, false); // No such player
 		return 1;
 	}
-	nativeModApiServer::n_server_kick_player(getServer(L), player->getPeerId(), message);
+	session_t session = player->getPeerId();
+	nativeModApiServer::n_server_kick_player(getServer(L), session, message);
 	lua_pushboolean(L, true);
 	return 1;
 }
@@ -663,6 +663,21 @@ int ModApiServer::l_show_formspec(lua_State *L)
 	return 1;
 }
 
+int ModApiServer::l_native_show_formspec(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	const char *playername = luaL_checkstring(L, 1);
+	const char *formname = luaL_checkstring(L, 2);
+	const char *formspec = luaL_checkstring(L, 3);
+
+	if (nativeModApiServer::n_server_show_formspec(getServer(L), playername, formname, formspec)) {
+		lua_pushboolean(L, true);
+	} else {
+		lua_pushboolean(L, false);
+	}
+	return 1;
+}
+
 // get_current_modname()
 int ModApiServer::l_get_current_modname(lua_State *L)
 {
@@ -671,12 +686,32 @@ int ModApiServer::l_get_current_modname(lua_State *L)
 	return 1;
 }
 
+int ModApiServer::l_native_get_current_modname(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	lua_rawgeti(L, LUA_REGISTRYINDEX, CUSTOM_RIDX_CURRENT_MOD_NAME);
+	return nativeModApiServer::n_server_get_current_modname();
+}
+
 // get_modpath(modname)
 int ModApiServer::l_get_modpath(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
 	std::string modname = luaL_checkstring(L, 1);
 	const ModSpec *mod = getServer(L)->getModSpec(modname);
+	if (!mod) {
+		lua_pushnil(L);
+		return 1;
+	}
+	lua_pushstring(L, mod->path.c_str());
+	return 1;
+}
+
+int ModApiServer::l_native_get_modpath(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	std::string modname = luaL_checkstring(L, 1);
+	const ModSpec *mod = nativeModApiServer::n_server_get_modpath(getServer(L), modname);
 	if (!mod) {
 		lua_pushnil(L);
 		return 1;
@@ -707,11 +742,36 @@ int ModApiServer::l_get_modnames(lua_State *L)
 	return 1;
 }
 
+int ModApiServer::l_native_get_modnames(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+
+	// Get a list of mods
+	std::vector<std::string> modlist = nativeModApiServer::n_server_get_modnames(getServer(L));
+
+	// Package them up for Lua
+	lua_createtable(L, modlist.size(), 0);
+	std::vector<std::string>::iterator iter = modlist.begin();
+	for (u16 i = 0; iter != modlist.end(); ++iter) {
+		lua_pushstring(L, iter->c_str());
+		lua_rawseti(L, -2, ++i);
+	}
+	return 1;
+}
+
 // get_worldpath()
 int ModApiServer::l_get_worldpath(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
 	std::string worldpath = getServer(L)->getWorldPath();
+	lua_pushstring(L, worldpath.c_str());
+	return 1;
+}
+
+int ModApiServer::l_native_get_worldpath(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	std::string worldpath = nativeModApiServer::n_server_get_worldpath(getServer(L));
 	lua_pushstring(L, worldpath.c_str());
 	return 1;
 }
@@ -735,12 +795,38 @@ int ModApiServer::l_sound_play(lua_State *L)
 	return 1;
 }
 
+int ModApiServer::l_native_sound_play(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	SimpleSoundSpec spec;
+	read_soundspec(L, 1, spec);
+	ServerSoundParams params;
+	read_server_sound_params(L, 2, params);
+	bool ephemeral = lua_gettop(L) > 2 && readParam<bool>(L, 3);
+	if (ephemeral) {
+		nativeModApiServer::n_server_sound_play(getServer(L), spec, params, true);
+		lua_pushnil(L);
+	} else {
+		s32 handle = nativeModApiServer::n_server_sound_play(getServer(L), spec, params, false);
+		lua_pushinteger(L, handle);
+	}
+	return 1;
+}
+
 // sound_stop(handle)
 int ModApiServer::l_sound_stop(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
 	s32 handle = luaL_checkinteger(L, 1);
 	getServer(L)->stopSound(handle);
+	return 0;
+}
+
+int ModApiServer::l_native_sound_stop(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	s32 handle = luaL_checkinteger(L, 1);
+	nativeModApiServer::n_server_sound_stop(getServer(L), handle);
 	return 0;
 }
 
@@ -751,6 +837,16 @@ int ModApiServer::l_sound_fade(lua_State *L)
 	float step = readParam<float>(L, 2);
 	float gain = readParam<float>(L, 3);
 	getServer(L)->fadeSound(handle, step, gain);
+	return 0;
+}
+
+int ModApiServer::l_native_sound_fade(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	s32 handle = luaL_checkinteger(L, 1);
+	float step = readParam<float>(L, 2);
+	float gain = readParam<float>(L, 3);
+	nativeModApiServer::n_server_sound_fade(getServer(L), handle, step, gain);
 	return 0;
 }
 
@@ -782,11 +878,45 @@ int ModApiServer::l_dynamic_add_media_raw(lua_State *L)
 	return 1;
 }
 
+int ModApiServer::l_native_dynamic_add_media_raw(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+
+	if (!getEnv(L))
+		throw LuaError("Dynamic media cannot be added before server has started up");
+
+	std::string filepath = readParam<std::string>(L, 1);
+	CHECK_SECURE_PATH(L, filepath.c_str(), false);
+
+	std::vector<RemotePlayer *> sent_to;
+	bool ok = nativeModApiServer::n_server_dynamic_add_media_raw(getServer(L), filepath, sent_to);
+	if (ok) {
+		// (see wrapper code in builtin)
+		lua_createtable(L, sent_to.size(), 0);
+		int i = 0;
+		for (RemotePlayer *player : sent_to) {
+			lua_pushstring(L, player->getName());
+			lua_rawseti(L, -2, ++i);
+		}
+	} else {
+		lua_pushboolean(L, false);
+	}
+
+	return 1;
+}
+
 // is_singleplayer()
 int ModApiServer::l_is_singleplayer(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
 	lua_pushboolean(L, getServer(L)->isSingleplayer());
+	return 1;
+}
+
+int ModApiServer::l_native_is_singleplayer(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	lua_pushboolean(L, nativeModApiServer::n_server_is_singleplayer(getServer(L)));
 	return 1;
 }
 
@@ -801,6 +931,16 @@ int ModApiServer::l_notify_authentication_modified(lua_State *L)
 	return 0;
 }
 
+int ModApiServer::l_native_notify_authentication_modified(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	std::string name;
+	if (lua_isstring(L, 1))
+		name = readParam<std::string>(L, 1);
+	nativeModApiServer::n_server_notify_authentication_modified(getServer(L), name);
+	return 0;
+}
+
 // get_last_run_mod()
 int ModApiServer::l_get_last_run_mod(lua_State *L)
 {
@@ -808,6 +948,18 @@ int ModApiServer::l_get_last_run_mod(lua_State *L)
 	lua_rawgeti(L, LUA_REGISTRYINDEX, CUSTOM_RIDX_CURRENT_MOD_NAME);
 	std::string current_mod = readParam<std::string>(L, -1, "");
 	if (current_mod.empty()) {
+		lua_pop(L, 1);
+		lua_pushstring(L, getScriptApiBase(L)->getOrigin().c_str());
+	}
+	return 1;
+}
+
+int ModApiServer::l_native_get_last_run_mod(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+	lua_rawgeti(L, LUA_REGISTRYINDEX, CUSTOM_RIDX_CURRENT_MOD_NAME);
+	std::string current_mod = readParam<std::string>(L, -1, "");
+	if (nativeModApiServer::n_server_get_last_run_mod(current_mod)) {
 		lua_pop(L, 1);
 		lua_pushstring(L, getScriptApiBase(L)->getOrigin().c_str());
 	}
@@ -826,39 +978,78 @@ int ModApiServer::l_set_last_run_mod(lua_State *L)
 	return 0;
 }
 
+int ModApiServer::l_native_set_last_run_mod(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+#ifdef SCRIPTAPI_DEBUG
+	const char *mod = lua_tostring(L, 1);
+	getScriptApiBase(L)->setOriginDirect(mod);
+	// printf(">>>> last mod set from Lua: %s\n", mod);
+#endif
+	return nativeModApiServer::n_server_set_last_run_mod();
+}
+
 void ModApiServer::Initialize(lua_State *L, int top)
 {
 	API_FCT(request_shutdown);
+	API_FCT(native_request_shutdown);
 	API_FCT(get_server_status);
+	API_FCT(native_get_server_status);
 	API_FCT(get_server_uptime);
+	API_FCT(native_get_server_uptime);
 	API_FCT(get_worldpath);
+	API_FCT(native_get_worldpath);
 	API_FCT(is_singleplayer);
+	API_FCT(native_is_singleplayer);
 
 	API_FCT(get_current_modname);
+	API_FCT(native_get_current_modname);
 	API_FCT(get_modpath);
+	API_FCT(native_get_modpath);
 	API_FCT(get_modnames);
+	API_FCT(native_get_modnames);
 
 	API_FCT(print);
+	API_FCT(native_print);
 
 	API_FCT(chat_send_all);
+	API_FCT(native_chat_send_all);
 	API_FCT(chat_send_player);
+	API_FCT(native_chat_send_player);
 	API_FCT(show_formspec);
+	API_FCT(native_show_formspec);
 	API_FCT(sound_play);
+	API_FCT(native_sound_play);
 	API_FCT(sound_stop);
+	API_FCT(native_sound_stop);
 	API_FCT(sound_fade);
+	API_FCT(native_sound_fade);
 	API_FCT(dynamic_add_media_raw);
+	API_FCT(native_dynamic_add_media_raw);
 
 	API_FCT(get_player_information);
+	API_FCT(native_get_player_information);
 	API_FCT(get_player_privs);
+	API_FCT(native_get_player_privs);
 	API_FCT(get_player_ip);
+	API_FCT(native_get_player_ip);
 	API_FCT(get_ban_list);
+	API_FCT(native_get_ban_list);
 	API_FCT(get_ban_description);
+	API_FCT(native_get_ban_description);
 	API_FCT(ban_player);
+	API_FCT(native_ban_player);
 	API_FCT(kick_player);
+	API_FCT(native_kick_player);
 	API_FCT(remove_player);
+	API_FCT(native_remove_player);
 	API_FCT(unban_player_or_ip);
+	API_FCT(native_unban_player_or_ip);
 	API_FCT(notify_authentication_modified);
+	API_FCT(native_notify_authentication_modified);
 
 	API_FCT(get_last_run_mod);
+	API_FCT(native_get_last_run_mod);
 	API_FCT(set_last_run_mod);
+	API_FCT(native_set_last_run_mod);
 }
