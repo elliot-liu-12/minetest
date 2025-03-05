@@ -2398,6 +2398,69 @@ int ModApiMapgen::l_create_schematic(lua_State *L)
 	return 1;
 }
 
+int ModApiMapgen::l_native_create_schematic(lua_State *L)
+{
+	MAP_LOCK_REQUIRED;
+
+	const NodeDefManager *ndef = getServer(L)->getNodeDefManager();
+
+	const char *filename = luaL_checkstring(L, 4);
+	CHECK_SECURE_PATH(L, filename, true);
+
+	Map *map = &(getEnv(L)->getMap());
+	Schematic schem;
+
+	v3s16 p1 = check_v3s16(L, 1);
+	v3s16 p2 = check_v3s16(L, 2);
+	sortBoxVerticies(p1, p2);
+
+	std::vector<std::pair<v3s16, u8>> prob_list;
+	if (lua_istable(L, 3)) {
+		lua_pushnil(L);
+		while (lua_next(L, 3)) {
+			if (lua_istable(L, -1)) {
+				lua_getfield(L, -1, "pos");
+				v3s16 pos = check_v3s16(L, -1);
+				lua_pop(L, 1);
+
+				u8 prob = getintfield_default(
+						L, -1, "prob", MTSCHEM_PROB_ALWAYS);
+				prob_list.emplace_back(pos, prob);
+			}
+
+			lua_pop(L, 1);
+		}
+	}
+
+	std::vector<std::pair<s16, u8>> slice_prob_list;
+	if (lua_istable(L, 5)) {
+		lua_pushnil(L);
+		while (lua_next(L, 5)) {
+			if (lua_istable(L, -1)) {
+				s16 ypos = getintfield_default(L, -1, "ypos", 0);
+				u8 prob = getintfield_default(
+						L, -1, "prob", MTSCHEM_PROB_ALWAYS);
+				slice_prob_list.emplace_back(ypos, prob);
+			}
+
+			lua_pop(L, 1);
+		}
+	}
+
+	if (!schem.getSchematicFromMap(map, p1, p2)) {
+		errorstream << "create_schematic: failed to get schematic "
+			       "from map"
+			    << std::endl;
+		return 0;
+	}
+	schem.applyProbabilities(p1, &prob_list, &slice_prob_list);
+	
+	//does saving the schematic to a file entail creation?
+	NativeModApiMapgen::n_create_schematic(ndef, schem, filename);
+
+	lua_pushboolean(L, true);
+	return 1;
+}
 
 // place_schematic(p, schematic, rotation,
 //     replacements, force_placement, flagstring)
@@ -2446,6 +2509,52 @@ int ModApiMapgen::l_place_schematic(lua_State *L)
 	return 1;
 }
 
+// place_schematic(p, schematic, rotation,
+//     replacements, force_placement, flagstring)
+int ModApiMapgen::l_native_place_schematic(lua_State *L)
+{
+	MAP_LOCK_REQUIRED;
+
+	GET_ENV_PTR;
+
+	ServerMap *map = &(env->getServerMap());
+	SchematicManager *schemmgr = getServer(L)->getEmergeManager()->schemmgr;
+
+	//// Read position
+	v3s16 p = check_v3s16(L, 1);
+
+	//// Read rotation
+	int rot = ROTATE_0;
+	std::string enumstr = readParam<std::string>(L, 3, "");
+	if (!enumstr.empty())
+		string_to_enum(es_Rotation, rot, enumstr);
+
+	//// Read force placement
+	bool force_placement = true;
+	if (lua_isboolean(L, 5))
+		force_placement = readParam<bool>(L, 5);
+
+	//// Read node replacements
+	StringMap replace_names;
+	if (lua_istable(L, 4))
+		read_schematic_replacements(L, 4, &replace_names);
+
+	//// Read schematic
+	Schematic *schem = get_or_load_schematic(L, 2, schemmgr, &replace_names);
+	if (!schem) {
+		errorstream << "place_schematic: failed to get schematic" << std::endl;
+		return 0;
+	}
+
+	//// Read flags
+	u32 flags = 0;
+	read_flags(L, 6, flagdesc_deco, &flags, NULL);
+
+	schem->placeOnMap(map, p, flags, (Rotation)rot, force_placement);
+
+	lua_pushboolean(L, true);
+	return 1;
+}
 
 // place_schematic_on_vmanip(vm, p, schematic, rotation,
 //     replacements, force_placement, flagstring)

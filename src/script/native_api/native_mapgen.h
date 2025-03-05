@@ -79,6 +79,7 @@ public:
 	static void n_clear_registered_decorations(DecorationManager *dmgr);
 	static void n_clear_registered_ores(OreManager *omgr);
 	static void n_clear_registered_schematics(SchematicManager *smgr);
-	static void n_generate_ores(Mapgen& mg, OreManager* oremgr, v3s16& pmin, v3s16& pmax);
-	static void n_generate_decorations(Mapgen& mg, DecorationManager* decomgr, v3s16& pmin, v3s16& pmax);
+	static void n_generate_ores(Mapgen& mg, OreManager* oremgr, const v3s16& pmin, const v3s16& pmax);
+	static void n_generate_decorations(Mapgen& mg, DecorationManager* decomgr, const v3s16& pmin, const v3s16& pmax);
+	static void n_create_schematic(const NodeDefManager* ndef, Schematic& schem, const std::string& filename);
 };

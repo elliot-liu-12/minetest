@@ -301,14 +301,22 @@ void NativeModApiMapgen::n_clear_registered_schematics(SchematicManager* smgr)
 	smgr->clear();
 }
 
-void NativeModApiMapgen::n_generate_ores(Mapgen &mg, OreManager *oremgr, v3s16 &pmin, v3s16 &pmax)
+void NativeModApiMapgen::n_generate_ores(Mapgen &mg, OreManager *oremgr,const v3s16 &pmin, const v3s16 &pmax)
 {
 	u32 blockseed = Mapgen::getBlockSeed(pmin, mg.seed);
 	oremgr->placeAllOres(&mg, blockseed, pmin, pmax);
 }
 
-void NativeModApiMapgen::n_generate_decorations(Mapgen& mg, DecorationManager* decomgr, v3s16& pmin, v3s16& pmax)
+void NativeModApiMapgen::n_generate_decorations(Mapgen& mg, DecorationManager* decomgr,const v3s16& pmin,const v3s16& pmax)
 {
 	u32 blockseed = Mapgen::getBlockSeed(pmin, mg.seed);
 	decomgr->placeAllDecos(&mg, blockseed, pmin, pmax);
 }
+
+void NativeModApiMapgen::n_create_schematic(const NodeDefManager *ndef, Schematic &schem, const std::string &filename)
+{
+	schem.saveSchematicToFile(filename, ndef);
+	actionstream << "create_schematic: saved schematic file '" << filename << "'."
+		     << std::endl;
+}
+
