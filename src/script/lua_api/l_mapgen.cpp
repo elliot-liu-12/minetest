@@ -537,7 +537,7 @@ int ModApiMapgen::l_get_biome_name(lua_State *L)
 	return 1;
 }
 
-int ModApiMapgen::l_get_biome_name(lua_State *L)
+int ModApiMapgen::l_native_get_biome_name(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
 
@@ -1657,7 +1657,7 @@ int ModApiMapgen::l_register_decoration(lua_State *L)
 	return 1;
 }
 
-int ModApiMapgen::l_register_decoration(lua_State *L)
+int ModApiMapgen::l_native_register_decoration(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
 
@@ -1962,7 +1962,7 @@ int ModApiMapgen::l_register_ore(lua_State *L)
 }
 
 // register_ore({lots of stuff})
-int ModApiMapgen::l_register_ore(lua_State *L)
+int ModApiMapgen::l_native_register_ore(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
 
@@ -2208,7 +2208,7 @@ int ModApiMapgen::l_clear_registered_ores(lua_State *L)
 	return 0;
 }
 
-int ModApiMapgen::l_clear_registered_ores(lua_State *L)
+int ModApiMapgen::l_native_clear_registered_ores(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
 
@@ -2550,8 +2550,7 @@ int ModApiMapgen::l_native_place_schematic(lua_State *L)
 	u32 flags = 0;
 	read_flags(L, 6, flagdesc_deco, &flags, NULL);
 
-	schem->placeOnMap(map, p, flags, (Rotation)rot, force_placement);
-
+	NativeModApiMapgen::n_place_schematic(schem, map, flags, p, (Rotation)rot, force_placement);
 	lua_pushboolean(L, true);
 	return 1;
 }
@@ -2604,13 +2603,64 @@ int ModApiMapgen::l_place_schematic_on_vmanip(lua_State *L)
 	return 1;
 }
 
+int ModApiMapgen::l_native_place_schematic_on_vmanip(lua_State* L)
+{
+	NO_MAP_LOCK_REQUIRED;
+
+	SchematicManager *schemmgr = getServer(L)->getEmergeManager()->schemmgr;
+
+	//// Read VoxelManip object
+	MMVManip *vm = LuaVoxelManip::checkobject(L, 1)->vm;
+
+	//// Read position
+	v3s16 p = check_v3s16(L, 2);
+
+	//// Read rotation
+	int rot = ROTATE_0;
+	std::string enumstr = readParam<std::string>(L, 4, "");
+	if (!enumstr.empty())
+		string_to_enum(es_Rotation, rot, std::string(enumstr));
+
+	//// Read force placement
+	bool force_placement = true;
+	if (lua_isboolean(L, 6))
+		force_placement = readParam<bool>(L, 6);
+
+	//// Read node replacements
+	StringMap replace_names;
+	if (lua_istable(L, 5))
+		read_schematic_replacements(L, 5, &replace_names);
+
+	//// Read schematic
+	Schematic *schem = get_or_load_schematic(L, 3, schemmgr, &replace_names);
+
+	//// Read flags
+	u32 flags = 0;
+	bool schematic_did_fit;
+	read_flags(L, 7, flagdesc_deco, &flags, NULL);
+	try
+	{
+		schematic_did_fit = NativeModApiMapgen::n_place_schematic_on_vmanip(
+				vm, schem, p, flags, (Rotation)rot, force_placement);
+
+	}
+	catch (std::exception& e)
+	{
+		errorstream << "place_schematic: failed to get schematic" << std::endl;
+		return 0;
+	}
+
+	lua_pushboolean(L, schematic_did_fit);
+	return 1;
+}
 
 // serialize_schematic(schematic, format, options={...})
 int ModApiMapgen::l_serialize_schematic(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
 
-	const SchematicManager *schemmgr = getServer(L)->getEmergeManager()->getSchematicManager();
+	const SchematicManager *schemmgr =
+			getServer(L)->getEmergeManager()->getSchematicManager();
 
 	//// Read options
 	bool use_comments = getboolfield_default(L, 3, "lua_use_comments", false);
@@ -2624,7 +2674,8 @@ int ModApiMapgen::l_serialize_schematic(lua_State *L)
 		was_loaded = true;
 	}
 	if (!schem) {
-		errorstream << "serialize_schematic: failed to get schematic" << std::endl;
+		errorstream << "serialize_schematic: failed to get schematic"
+			    << std::endl;
 		return 0;
 	}
 
@@ -2641,8 +2692,8 @@ int ModApiMapgen::l_serialize_schematic(lua_State *L)
 		schem->serializeToMts(&os, schem->m_nodenames);
 		break;
 	case SCHEM_FMT_LUA:
-		schem->serializeToLua(&os, schem->m_nodenames,
-			use_comments, indent_spaces);
+		schem->serializeToLua(
+				&os, schem->m_nodenames, use_comments, indent_spaces);
 		break;
 	default:
 		return 0;
@@ -2654,6 +2705,52 @@ int ModApiMapgen::l_serialize_schematic(lua_State *L)
 	std::string ser = os.str();
 	lua_pushlstring(L, ser.c_str(), ser.length());
 	return 1;
+}
+
+int ModApiMapgen::l_native_serialize_schematic(lua_State* L)
+{
+	NO_MAP_LOCK_REQUIRED;
+
+	const SchematicManager *schemmgr =
+			getServer(L)->getEmergeManager()->getSchematicManager();
+
+	//// Read options
+	bool use_comments = getboolfield_default(L, 3, "lua_use_comments", false);
+	u32 indent_spaces = getintfield_default(L, 3, "lua_num_indent_spaces", 0);
+
+	//// Get schematic
+	bool was_loaded = false;
+	const Schematic *schem = (Schematic *)get_objdef(L, 1, schemmgr);
+	if (!schem) {
+		schem = load_schematic(L, 1, NULL, NULL);
+		was_loaded = true;
+	}
+	if (!schem) {
+		errorstream << "serialize_schematic: failed to get schematic"
+			    << std::endl;
+		return 0;
+	}
+
+	//// Read format of definition to save as
+	int schem_format = SCHEM_FMT_MTS;
+	std::string enumstr = readParam<std::string>(L, 2, "");
+	if (!enumstr.empty())
+		string_to_enum(es_SchematicFormatType, schem_format, enumstr);
+
+	//// Serialize to binary string, using nullptr as error message
+	std::unique_ptr<std::string> ser = NativeModApiMapgen::n_serialize_schematic(schem, schem_format, use_comments, indent_spaces);
+	if (!ser)
+		return 0;
+
+	if (was_loaded)
+		delete schem;
+
+	else
+	{
+		lua_pushlstring(L, (*ser).c_str(), (*ser).length());
+		return 1;
+	}
+
 }
 
 // read_schematic(schematic, options={...})
@@ -2734,6 +2831,84 @@ int ModApiMapgen::l_read_schematic(lua_State *L)
 	return 1;
 }
 
+// read_schematic(schematic, options={...})
+int ModApiMapgen::l_native_read_schematic(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+
+	const SchematicManager *schemmgr =
+			getServer(L)->getEmergeManager()->getSchematicManager();
+
+	//// Read options
+	std::string write_yslice =
+			getstringfield_default(L, 2, "write_yslice_prob", "all");
+
+	//// Get schematic
+	bool was_loaded = false;
+	Schematic *schem = (Schematic *)get_objdef(L, 1, schemmgr);
+	if (!schem) {
+		schem = load_schematic(L, 1, NULL, NULL);
+		was_loaded = true;
+	}
+	if (!schem) {
+		errorstream << "read_schematic: failed to get schematic" << std::endl;
+		return 0;
+	}
+	lua_pop(L, 2);
+
+	//// Create the Lua table
+	NativeModApiMapgen::SchematicFieldData sfd = NativeModApiMapgen::n_read_schematic(schem, write_yslice);
+
+	lua_createtable(L, 0, (write_yslice == "none") ? 2 : 3);
+
+	// Create the size field
+	push_v3s16(L, *sfd.size);
+	lua_setfield(L, 1, "size");
+
+	// Create the yslice_prob field
+	if (write_yslice != "none") {
+		lua_createtable(L, schem->size.Y, 0);
+		//first element in pair is y index, while second is probability
+		for (int i = 0; i < sfd.yslice_probs.size(); i++)
+		{
+			std::pair<u16, u8> currPair = sfd.yslice_probs[i];
+			if (currPair.second < MTSCHEM_PROB_ALWAYS || write_yslice != "low") {
+				lua_createtable(L, 0, 2);
+				lua_pushinteger(L, currPair.first);
+				lua_setfield(L, 3, "ypos");
+				lua_pushinteger(L, currPair.second * 2);
+				lua_setfield(L, 3, "prob");
+				lua_rawseti(L, 2, currPair.first + 1);
+			}			
+		}
+		lua_setfield(L, 1, "yslice_prob");
+	}
+
+	// Create the data field
+	lua_createtable(L, sfd.numnodes, 0); // data table
+	for (u32 i = 0; i < sfd.numnodes; ++i) {
+		NativeModApiMapgen::NodeData currNd = sfd.mapNode_params[i];
+
+		lua_createtable(L, 0, currNd.force_place ? 4 : 3);
+		lua_pushstring(L, currNd.name->c_str());
+		lua_setfield(L, 3, "name");
+		lua_pushinteger(L, currNd.probability * 2);
+		lua_setfield(L, 3, "prob");
+		lua_pushinteger(L, currNd.param2);
+		lua_setfield(L, 3, "param2");
+		if (currNd.force_place) {
+			lua_pushboolean(L, 1);
+			lua_setfield(L, 3, "force_place");
+		}
+		lua_rawseti(L, 2, i + 1);
+	}
+	lua_setfield(L, 1, "data");
+
+	if (was_loaded)
+		delete schem;
+
+	return 1;
+}
 
 void ModApiMapgen::Initialize(lua_State *L, int top)
 {

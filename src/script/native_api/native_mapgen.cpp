@@ -320,3 +320,80 @@ void NativeModApiMapgen::n_create_schematic(const NodeDefManager *ndef, Schemati
 		     << std::endl;
 }
 
+void NativeModApiMapgen::n_place_schematic(Schematic *s, ServerMap *m, const u32 flags,const v3s16 &p, const Rotation rot, const bool force_placement)
+{
+	s->placeOnMap(m, p, flags, rot, force_placement);
+}
+
+bool NativeModApiMapgen::n_place_schematic_on_vmanip(MMVManip *v, Schematic *s, const v3s16 p, const u32 flags, 
+	const Rotation rot, const bool force_placement)
+{
+	if (!s)
+	{
+		throw new std::exception("Schematic is null");
+	}
+	return s->placeOnVManip(v, p, flags, rot, force_placement);
+}
+
+std::unique_ptr<std::string> NativeModApiMapgen::n_serialize_schematic(const Schematic* s, const int fmt, const bool use_comments, const u32 indent_spaces)
+{
+	std::unique_ptr<std::string> res;
+	std::ostringstream os(std::ios_base::binary);
+	switch (fmt) {
+	case SCHEM_FMT_MTS:
+		s->serializeToMts(&os, s->m_nodenames);
+		break;
+	case SCHEM_FMT_LUA:
+		s->serializeToLua(
+				&os, s->m_nodenames, use_comments, indent_spaces);
+		break;
+	default:
+		return res;
+	}
+	res = std::make_unique<std::string>(os.str());
+	return res;
+}
+
+NativeModApiMapgen::SchematicFieldData NativeModApiMapgen::n_read_schematic(
+	Schematic* schem, std::string& write_yslice)
+{
+	SchematicFieldData sfd;
+	sfd.numnodes = schem->size.X * schem->size.Y * schem->size.Z;
+	sfd.names = &schem->m_nodenames;
+	sfd.size = &schem->size;
+
+	if (write_yslice != "none")
+	{
+		for (u16 y = 0; y != schem->size.Y; y++)
+		{
+			u8 probability = schem->slice_probs[y] & MTSCHEM_PROB_MASK;
+			if (probability < MTSCHEM_PROB_ALWAYS || write_yslice != "low")
+			{
+				sfd.yslice_probs.push_back(std::make_pair(y, probability));
+			}
+		}
+	}
+
+	//mapnode params are always in order
+	for (u32 i = 0; i != sfd.numnodes; i++)
+	{
+		MapNode node = schem->schemdata[i];
+		u8 probability = node.param1 & MTSCHEM_PROB_MASK;
+		bool force_place = node.param1 & MTSCHEM_FORCE_PLACE;
+	}
+	
+	sfd.mapNode_params = std::vector<NodeData>(sfd.numnodes);
+	for (int i = 0; i < sfd.mapNode_params.size(); i++)
+	{
+		MapNode node = schem->schemdata[i];
+		NodeData nd;
+		nd.probability = node.param1 & MTSCHEM_PROB_MASK;
+		nd.force_place = node.param1 & MTSCHEM_FORCE_PLACE;
+		//stores name as pointer to string in stored pointer to array to save memory
+		nd.name = &(*sfd.names)[schem->schemdata[i].getContent()];
+		nd.param2 = node.getParam2();
+		sfd.mapNode_params.push_back(nd);
+	}
+
+	return sfd;
+}

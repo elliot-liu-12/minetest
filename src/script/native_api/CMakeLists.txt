@@ -16,8 +16,7 @@ set(common_SCRIPT_NATIVE_API_SRCS
 	${CMAKE_CURRENT_SOURCE_DIR}/native_nodemeta.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/native_util.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/native_server.cpp
-  
-
+  	${CMAKE_CURRENT_SOURCE_DIR}/native_mapgen.cpp
 	PARENT_SCOPE)
 
 set(client_SCRIPT_NATIVE_API_SRCS

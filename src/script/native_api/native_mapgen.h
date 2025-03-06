@@ -15,6 +15,7 @@
 #include "settings.h"
 #include "log.h"
 #include <memory>
+#include "mapnode.h"
 
 class NativeModApiMapgen
 {
@@ -41,6 +42,25 @@ public:
 		std::string flags;
 		MapgenParams(){}
 	};
+	
+	struct NodeData
+	{
+		std::string *name;
+		bool force_place;
+		u8 probability;
+		u8 param2;
+	};
+
+	struct SchematicFieldData
+	{
+		u32 numnodes;
+		std::vector<std::string>* names;
+		v3s16 *size;
+		std::vector<std::pair<u16, u8>> yslice_probs;
+		std::vector<NodeData> mapNode_params;
+	};
+
+
 	static struct EnumString NativeModApiMapgen::es_MapgenObject[];
 	static u32 n_get_biome_id(const BiomeManager *bmgr, const char *biome_str);
 	static std::string n_get_biome_name(const BiomeManager *bmgr, const int biome_id);
@@ -82,4 +102,8 @@ public:
 	static void n_generate_ores(Mapgen& mg, OreManager* oremgr, const v3s16& pmin, const v3s16& pmax);
 	static void n_generate_decorations(Mapgen& mg, DecorationManager* decomgr, const v3s16& pmin, const v3s16& pmax);
 	static void n_create_schematic(const NodeDefManager* ndef, Schematic& schem, const std::string& filename);
+	static void n_place_schematic(Schematic* s, ServerMap* m, const u32 flags, const v3s16 &p, const Rotation rot, const bool force_placement);
+	static bool n_place_schematic_on_vmanip(MMVManip* v, Schematic* s, const v3s16 p, const u32 flags, const Rotation rot, const bool force_placement);
+	static std::unique_ptr<std::string> n_serialize_schematic(const Schematic* s, const int fmt, const bool use_comments, const u32 indent_spaces);
+	static SchematicFieldData n_read_schematic(Schematic *schem, std::string &write_yslice);
 };
