@@ -2351,6 +2351,8 @@ luaL_Reg ObjectRef::methods[] = {
 	luamethod_aliased(ObjectRef, add_velocity, add_player_velocity),
 	luamethod_aliased(ObjectRef, get_velocity, getvelocity),
 	luamethod_dep(ObjectRef, get_velocity, get_player_velocity),
+	//register new native alias to test native function
+	luamethod_dep_native(ObjectRef, get_velocity, native_get_player_velocity),
 
 	// LuaEntitySAO-only
 	luamethod_aliased(ObjectRef, set_acceleration, setacceleration),
