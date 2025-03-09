@@ -26,6 +26,7 @@ dofile(modpath .. "/rollback.lua")
 
 dofile(modpath .. "/nodemeta.lua")
 dofile(modpath .. "/util.lua")
+dofile(modpath .. "/base.lua")
 
 -- Load helper files
 dofile(modpath .. "/other.lua")
