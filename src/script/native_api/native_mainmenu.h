@@ -11,13 +11,14 @@
 #include <memory>
 #include "mapgen/mapgen.h"
 #include "client/renderingengine.h"
+#include "debug.h"
 #include <IFileSystem.h>
 #include <IFileArchive.h>
 
-class NativeModApiMainmenu
+class NativeModApiMainMenu
 {
 public:
-	struct screenInfo
+	struct ScreenInfo
 	{
 		float density;
 		u32 display_width;
@@ -25,7 +26,7 @@ public:
 		u32 window_width;
 		u32 window_height;
 
-		screenInfo(float density, u32 displayX, u32 displayY, u32 windowX, u32 windowY)
+		ScreenInfo(float density, u32 displayX, u32 displayY, u32 windowX, u32 windowY)
 		{
 			this->density = density;
 			display_width = displayX;
@@ -75,12 +76,14 @@ public:
 	static bool n_download_file(const std::string &url, const std::string &target); 
 	static std::vector<irr::video::E_DRIVER_TYPE> n_get_video_drivers();
 	static std::vector<core::vector3d<u32>> n_get_video_modes();
-	static std::string n_gettext(const char *text);
-	static screenInfo n_get_screen_info();
+	static std::string n_gettext(const char *raw_text);
+	static ScreenInfo n_get_screen_info();
 	static int n_get_min_supp_proto();
 	static int n_get_max_supp_proto();
+	static bool n_open_url(const std::string& url); 
 	static bool n_open_dir(const std::string &path);
-	static int n_do_async_callback(GUIEngine* engine, const std::string& func, const std::string& param);
+	static int n_do_async_callback(GUIEngine* engine, const char* func, const char* param,
+		size_t func_length, size_t param_length);
 	private:
 	//helper functions
 	static bool mayModifyPath(std::string path);

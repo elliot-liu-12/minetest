@@ -2949,4 +2949,40 @@ void ModApiMapgen::Initialize(lua_State *L, int top)
 	API_FCT(place_schematic_on_vmanip);
 	API_FCT(serialize_schematic);
 	API_FCT(read_schematic);
+
+	/*NATIVE FUNCTIONS*/
+
+	API_FCT(native_get_biome_id);
+	API_FCT(native_get_biome_name);
+	API_FCT(native_get_heat);
+	API_FCT(native_get_humidity);
+	API_FCT(native_get_biome_data);
+	API_FCT(native_get_mapgen_object);
+	API_FCT(native_get_spawn_level);
+	API_FCT(native_get_mapgen_params);
+	API_FCT(native_set_mapgen_params);
+	API_FCT(native_get_mapgen_setting);
+	API_FCT(native_set_mapgen_setting);
+	API_FCT(native_get_mapgen_setting_noiseparams);
+	API_FCT(native_set_mapgen_setting_noiseparams);
+	API_FCT(native_set_noiseparams);
+	API_FCT(native_get_noiseparams);
+	API_FCT(native_set_gen_notify);
+	API_FCT(native_get_gen_notify);
+	API_FCT(native_get_decoration_id);
+	API_FCT(native_register_biome);
+	API_FCT(native_register_decoration);
+	API_FCT(native_register_ore);
+	API_FCT(native_register_schematic);
+	API_FCT(native_clear_registered_biomes);
+	API_FCT(native_clear_registered_decorations);
+	API_FCT(native_clear_registered_ores);
+	API_FCT(native_clear_registered_schematics);
+	API_FCT(native_generate_ores);
+	API_FCT(native_generate_decorations);
+	API_FCT(native_create_schematic);
+	API_FCT(native_place_schematic);
+	API_FCT(native_place_schematic_on_vmanip);
+	API_FCT(native_serialize_schematic);
+	API_FCT(native_read_schematic);
 }

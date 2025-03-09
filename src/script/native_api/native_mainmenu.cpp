@@ -1,6 +1,6 @@
 #include "native_mainmenu.h"
 
-void NativeModApiMainmenu::n_update_formspec(GUIEngine* engine, const std::string& formspec)
+void NativeModApiMainMenu::n_update_formspec(GUIEngine* engine, const std::string& formspec)
 {
 	sanity_check(engine != NULL);
 	if (engine->m_formspecgui != 0) {
@@ -8,13 +8,13 @@ void NativeModApiMainmenu::n_update_formspec(GUIEngine* engine, const std::strin
 	}
 }
 
-void NativeModApiMainmenu::n_set_formspec_prepend(GUIEngine* engine, const std::string& formspec)
+void NativeModApiMainMenu::n_set_formspec_prepend(GUIEngine* engine, const std::string& formspec)
 {
 	sanity_check(engine != NULL);
 	engine->setFormspecPrepend(formspec);
 }
 
-void NativeModApiMainmenu::n_start(GUIEngine* engine, const MainMenuData& newData)
+void NativeModApiMainMenu::n_start(GUIEngine* engine, const MainMenuData& newData)
 {
 	sanity_check(engine != NULL);
 	MainMenuData *currData = engine->m_data;
@@ -34,13 +34,13 @@ void NativeModApiMainmenu::n_start(GUIEngine* engine, const MainMenuData& newDat
 	engine->m_startgame = true;
 }
 
-void NativeModApiMainmenu::n_close(GUIEngine* engine)
+void NativeModApiMainMenu::n_close(GUIEngine* engine)
 {
 	sanity_check(engine != NULL);
 	engine->m_kill = true;
 }
 
-bool NativeModApiMainmenu::n_set_background(GUIEngine *engine, const std::string backgroundlevel, const std::string texturename, const bool tile_image, const unsigned int minsize)
+bool NativeModApiMainMenu::n_set_background(GUIEngine *engine, const std::string backgroundlevel, const std::string texturename, const bool tile_image, const unsigned int minsize)
 {
 	sanity_check(engine != NULL);
 	bool retval = false;
@@ -66,13 +66,13 @@ bool NativeModApiMainmenu::n_set_background(GUIEngine *engine, const std::string
 	return retval;
 }
 
-void NativeModApiMainmenu::n_set_clouds(GUIEngine* engine, const bool value)
+void NativeModApiMainMenu::n_set_clouds(GUIEngine* engine, const bool value)
 {
 	sanity_check(engine != NULL);
 	engine->m_clouds_enabled = value;
 }
 
-s32 NativeModApiMainmenu::n_get_table_index(GUIEngine* engine, const std::string& tablename)
+s32 NativeModApiMainMenu::n_get_table_index(GUIEngine* engine, const std::string& tablename)
 {
 	sanity_check(engine != NULL);
 	GUITable *table = engine->m_menu->getTable(tablename);
@@ -80,17 +80,17 @@ s32 NativeModApiMainmenu::n_get_table_index(GUIEngine* engine, const std::string
 	return selection;
 }
 
-std::vector<WorldSpec> NativeModApiMainmenu::n_get_worlds()
+std::vector<WorldSpec> NativeModApiMainMenu::n_get_worlds()
 {
 	return getAvailableWorlds();
 }
 
-std::vector<SubgameSpec> NativeModApiMainmenu::n_get_games()
+std::vector<SubgameSpec> NativeModApiMainMenu::n_get_games()
 {
 	return getAvailableGames();
 }
 
-ContentSpec NativeModApiMainmenu::n_get_content_info(const std::string& path)
+ContentSpec NativeModApiMainMenu::n_get_content_info(const std::string& path)
 {
 	ContentSpec spec;
 	spec.path = path;
@@ -98,7 +98,7 @@ ContentSpec NativeModApiMainmenu::n_get_content_info(const std::string& path)
 	return spec;
 }
 
-void NativeModApiMainmenu::n_show_keys_menu(GUIEngine* engine)
+void NativeModApiMainMenu::n_show_keys_menu(GUIEngine* engine)
 {
 	sanity_check(engine != NULL);
 	GUIKeyChangeMenu *kmenu = new GUIKeyChangeMenu(RenderingEngine::get_gui_env(),
@@ -107,7 +107,7 @@ void NativeModApiMainmenu::n_show_keys_menu(GUIEngine* engine)
 	kmenu->drop();
 }
 
-std::unique_ptr<std::string> NativeModApiMainmenu::n_create_world(const std::string& name, const int& gameidx)
+std::unique_ptr<std::string> NativeModApiMainMenu::n_create_world(const std::string& name, const int& gameidx)
 {
 	std::string path = porting::path_user + DIR_DELIM "worlds" + DIR_DELIM +
 			   sanitizeDirName(name, "world_");
@@ -132,7 +132,7 @@ std::unique_ptr<std::string> NativeModApiMainmenu::n_create_world(const std::str
 	return status;
 }
 
-std::unique_ptr<std::string> NativeModApiMainmenu::n_delete_world(const int& world_id)
+std::unique_ptr<std::string> NativeModApiMainMenu::n_delete_world(const int& world_id)
 {
 	std::unique_ptr<std::string> status;
 	std::vector<WorldSpec> worlds = getAvailableWorlds();
@@ -153,63 +153,63 @@ std::unique_ptr<std::string> NativeModApiMainmenu::n_delete_world(const int& wor
 
 }
 
-void NativeModApiMainmenu::n_set_topleft_text(GUIEngine* engine, const std::string& text)
+void NativeModApiMainMenu::n_set_topleft_text(GUIEngine* engine, const std::string& text)
 {
 	sanity_check(engine != NULL);
 	engine->setTopleftText(text);
 }
 
-void NativeModApiMainmenu::n_get_mapgen_names(
+void NativeModApiMainMenu::n_get_mapgen_names(
 		std::vector<const char *> &names, bool include_hidden)
 {
 	Mapgen::getMapgenNames(&names, include_hidden);
 }
 
-std::string NativeModApiMainmenu::n_get_user_path()
+std::string NativeModApiMainMenu::n_get_user_path()
 {
 	return fs::RemoveRelativePathComponents(porting::path_user);
 }
 
-std::string NativeModApiMainmenu::n_get_modpath()
+std::string NativeModApiMainMenu::n_get_modpath()
 {
 	return fs::RemoveRelativePathComponents(porting::path_user + DIR_DELIM + "mods" + DIR_DELIM);
 }
 
-std::string NativeModApiMainmenu::n_get_clientmodpath()
+std::string NativeModApiMainMenu::n_get_clientmodpath()
 {
 	return fs::RemoveRelativePathComponents(
 			porting::path_user + DIR_DELIM + "clientmods" + DIR_DELIM);
 }
 
-std::string NativeModApiMainmenu::n_get_gamepath()
+std::string NativeModApiMainMenu::n_get_gamepath()
 {
 	return fs::RemoveRelativePathComponents(
 			porting::path_user + DIR_DELIM + "games" + DIR_DELIM);
 }
 
-std::string NativeModApiMainmenu::n_get_texturepath()
+std::string NativeModApiMainMenu::n_get_texturepath()
 {
 	return fs::RemoveRelativePathComponents(
 			porting::path_user + DIR_DELIM + "textures");
 }
 
-std::string NativeModApiMainmenu::n_get_texturepath_share()
+std::string NativeModApiMainMenu::n_get_texturepath_share()
 {
 	return fs::RemoveRelativePathComponents(
 			porting::path_share + DIR_DELIM + "textures");
 }
 
-std::string NativeModApiMainmenu::n_get_cache_path()
+std::string NativeModApiMainMenu::n_get_cache_path()
 {
 	return fs::RemoveRelativePathComponents(porting::path_cache);
 }
 
-std::string NativeModApiMainmenu::n_get_temp_path()
+std::string NativeModApiMainMenu::n_get_temp_path()
 {
 	return fs::TempPath();
 }
 
-bool NativeModApiMainmenu::n_create_dir(const std::string &path)
+bool NativeModApiMainMenu::n_create_dir(const std::string &path)
 {
 	if (mayModifyPath(path)) {
 		return fs::CreateAllDirs(path);
@@ -217,7 +217,7 @@ bool NativeModApiMainmenu::n_create_dir(const std::string &path)
 	return false;
 }
 
-bool NativeModApiMainmenu::mayModifyPath(std::string path)
+bool NativeModApiMainMenu::mayModifyPath(std::string path)
 {
 	path = fs::RemoveRelativePathComponents(path);
 
@@ -244,7 +244,7 @@ bool NativeModApiMainmenu::mayModifyPath(std::string path)
 	return false;
 }
 
-bool NativeModApiMainmenu::n_delete_dir(const std::string& path)
+bool NativeModApiMainMenu::n_delete_dir(const std::string& path)
 {
 	std::string absolute_path = fs::RemoveRelativePathComponents(path);
 	if (mayModifyPath(absolute_path)) {
@@ -253,7 +253,7 @@ bool NativeModApiMainmenu::n_delete_dir(const std::string& path)
 	return false;
 }
 
-bool NativeModApiMainmenu::n_copy_dir(const std::string& source, const std::string& destination, const bool keep_source)
+bool NativeModApiMainMenu::n_copy_dir(const std::string& source, const std::string& destination, const bool keep_source)
 {
 	std::string absolute_destination = fs::RemoveRelativePathComponents(destination);
 	std::string absolute_source = fs::RemoveRelativePathComponents(source);
@@ -270,12 +270,12 @@ bool NativeModApiMainmenu::n_copy_dir(const std::string& source, const std::stri
 	return false;
 }
 
-bool NativeModApiMainmenu::n_is_dir(const std::string &path)
+bool NativeModApiMainMenu::n_is_dir(const std::string &path)
 {
 	return fs::IsDir(path);
 }
 
-bool NativeModApiMainmenu::n_extract_zip(const std::string& zipfile,const std::string& destination)
+bool NativeModApiMainMenu::n_extract_zip(const std::string& zipfile,const std::string& destination)
 {
 	//will return false if path is not modifiable or operation fails at any point. Only returns true if ENTIRE OPERATION succeeds
 	std::string absolute_destination = fs::RemoveRelativePathComponents(destination);
@@ -356,19 +356,19 @@ bool NativeModApiMainmenu::n_extract_zip(const std::string& zipfile,const std::s
 
 }
 
-std::string NativeModApiMainmenu::n_get_mainmenu_path(GUIEngine* engine)
+std::string NativeModApiMainMenu::n_get_mainmenu_path(GUIEngine* engine)
 {
 	sanity_check(engine != NULL);
 	return engine->getScriptDir();
 }
 
-bool NativeModApiMainmenu::n_may_modify_path(const std::string& path)
+bool NativeModApiMainMenu::n_may_modify_path(const std::string& path)
 {
 	std::string absolute_destination = fs::RemoveRelativePathComponents(path);
 	return mayModifyPath(absolute_destination);
 }
 
-void NativeModApiMainmenu::n_show_path_select_dialog(GUIEngine *engine,
+void NativeModApiMainMenu::n_show_path_select_dialog(GUIEngine *engine,
 		const std::string &formname, const std::string &title,
 		const bool is_file_select)
 {
@@ -379,7 +379,7 @@ void NativeModApiMainmenu::n_show_path_select_dialog(GUIEngine *engine,
 	fileOpenMenu->drop();
 }
 
-bool NativeModApiMainmenu::n_download_file(
+bool NativeModApiMainMenu::n_download_file(
 		const std::string &url, const std::string &target)
 {
 	std::string absolute_destination = fs::RemoveRelativePathComponents(target);
@@ -394,49 +394,60 @@ bool NativeModApiMainmenu::n_download_file(
 	return false;
 }
 
-std::vector<irr::video::E_DRIVER_TYPE> NativeModApiMainmenu::n_get_video_drivers()
+std::vector<irr::video::E_DRIVER_TYPE> NativeModApiMainMenu::n_get_video_drivers()
 {
 	return RenderingEngine::getSupportedVideoDrivers();
 }
 
-std::vector<core::vector3d<u32>> NativeModApiMainmenu::n_get_video_modes()
+std::vector<core::vector3d<u32>> NativeModApiMainMenu::n_get_video_modes()
 {
-	return NativeModApiMainmenu::n_get_video_modes();
+	return RenderingEngine::getSupportedVideoModes();
 }
 
-std::string NativeModApiMainmenu::n_gettext(const char* text)
+std::string NativeModApiMainMenu::n_gettext(const char* raw_text)
 {
-	std::string text = strgettext(std::string(text));
+	std::string text = strgettext(std::string(raw_text));
 	return text;
 }
 
-NativeModApiMainmenu::screenInfo NativeModApiMainmenu::n_get_screen_info()
+NativeModApiMainMenu::ScreenInfo NativeModApiMainMenu::n_get_screen_info()
 {
 	const v2u32 window_size = RenderingEngine::get_instance()->getWindowSize();
-	const screenInfo s = screenInfo(RenderingEngine::getDisplayDensity(),
+	const ScreenInfo s = ScreenInfo(RenderingEngine::getDisplayDensity(),
 			RenderingEngine::getDisplaySize().X,
 			RenderingEngine::getDisplaySize().Y, window_size.X,
 			window_size.Y);
 	return s;
 }
 
-int NativeModApiMainmenu::n_get_min_supp_proto()
+int NativeModApiMainMenu::n_get_min_supp_proto()
 {
 	return CLIENT_PROTOCOL_VERSION_MIN;
 }
 
-int NativeModApiMainmenu::n_get_max_supp_proto()
+int NativeModApiMainMenu::n_get_max_supp_proto()
 {
 	return CLIENT_PROTOCOL_VERSION_MAX;
 }
 
-bool NativeModApiMainmenu::n_open_dir(const std::string& path)
+bool NativeModApiMainMenu::n_open_dir(const std::string& path)
 {
 	return porting::open_directory(path);
 }
 
-int NativeModApiMainmenu::n_do_async_callback(GUIEngine* engine,
-	const std::string& func, const std::string& param)
+bool NativeModApiMainMenu::n_open_url(const std::string& url)
 {
-	return engine->queueAsync(func, param);
+	return porting::open_url(std::string(url));
+}
+
+int NativeModApiMainMenu::n_do_async_callback(GUIEngine *engine, const char *func,
+		const char *param, size_t func_length, size_t param_length)
+{
+	sanity_check(func != NULL);
+	sanity_check(param != NULL);
+
+	std::string serialized_func = std::string(func, func_length);
+	std::string serialized_param = std::string(param, param_length);
+
+	return engine->queueAsync(serialized_func, serialized_param);
 }
